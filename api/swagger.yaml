@@ -1,0 +1,2002 @@
+---
+swagger: "2.0"
+info:
+  description: "# Notice: The URL in `Example Request` is currently wrong. The URL\
+    \ to use is: `https://api.sandbox.mobilepay.dk/pos/api/v10/...`\n## PoS  V10 API\n\
+    \nThe API is split into 5 categories: \n* **Brands**: Look up brands or stores\
+    \ based on brand \n* **PointOfSales**: Management of Point of Sales including\
+    \ create, delete and querying. Note that a Point of Sale is not editable. \n*\
+    \ **Refunds**: Everything needed in order to do a refund (create, cancel and look\
+    \ up) \n* **Stores**: Look up store information \n* **Payments**: Everything needed\
+    \ in order to initiate and complete a payment. \n\n#### Payment flows\nPayments\
+    \ can be started in two ways: as an initiated payment that is immediatedly ready\
+    \ for user approval or as a prepared payment that is not yet ready for user approval\
+    \ and must be explicitly marked as ready. Once a payment is ready for user approval,\
+    \ it is issued to the user. Once the user accepts the payment request, and the\
+    \ payment amount has been reserved, the payment must be captured to complete the\
+    \ payment.\n\nThe API thus supports the following two payment flows:\n* Initiate\
+    \ payment (POST /payments) --> poll until reserved (GET /payments/{paymentId})\
+    \ --> capture (POST /payments/{paymentId}/capture) \n* Prepare payment (POST /payments/prepare)\
+    \ --> mark as ready (POST /payments/{paymentId}/ready) --> poll until reserved\
+    \ (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)"
+  version: "1.0.16"
+  title: "PoS V10 Integrator API"
+  contact:
+    name: "MobilePay Business Integration"
+    email: "help@mobilepay.dk"
+  x-ibm-name: "pos-v10-integrator-api"
+basePath: "/pos"
+schemes:
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+security: []
+paths:
+  /api/v10/payments/{paymentId}:
+    get:
+      tags:
+      - "Payments"
+      summary: "Lookup a Payment"
+      operationId: "QueryPayment"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "paymentId"
+        in: "path"
+        description: "PaymentId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "The Payment"
+          examples:
+            application/json:
+              paymentId: "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+              posId: "c0000a0f-68b8-4759-847b-08d5284c344c"
+              orderId: "ORDER-12345"
+              amount: 12.5
+              currencyCode: "DKK"
+              restrictions:
+                debitCardDisallowed: false
+                creditCardDisallowed: false
+                userMinimumAge: 18
+              merchantPaymentLabel: "PaymentLabel"
+              plannedCaptureDelay: "None"
+              status: "Paired"
+              customerToken: "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb"
+              customerReceiptToken: "671c4da4859a4639a5453120d791aac0"
+              loyaltyIds:
+              - "123456"
+              pollDelayInMs: 100
+          schema:
+            $ref: "#/definitions/QueryPaymentResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Payment not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/payments:
+    get:
+      tags:
+      - "Payments"
+      summary: "Lookup Payments for a given filter"
+      operationId: "QueryPaymentIds"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "posId"
+        in: "query"
+        description: "Restricts Payments returned to those with a specific PosId"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "orderId"
+        in: "query"
+        description: "Restricts Payments returned to those with a specific orderId"
+        required: false
+        type: "string"
+      - name: "active"
+        in: "query"
+        description: "Restricts Payments returned to those that are active"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "List of paymentIds satisfied by the filter"
+          examples:
+            application/json:
+              paymentIds:
+              - "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+          schema:
+            $ref: "#/definitions/QueryPaymentIdsResponse"
+        "204":
+          description: "No paymentIds satisfied by the filter exist"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "409":
+          description: "Filter not specific enough"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+    post:
+      tags:
+      - "Payments"
+      summary: "Initiate a new Payment"
+      operationId: "InitiateReservationPayment"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/InitiateReservationPaymentRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Idempotency-Key"
+        in: "header"
+        description: "Used to ensure retried calls are handled correctly"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Payment initiated"
+          examples:
+            application/json:
+              paymentId: "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+          schema:
+            $ref: "#/definitions/PaymentInitiatedResponse"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "409":
+          description: "Payment could not be initiated. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/payments/prepare:
+    post:
+      tags:
+      - "Payments"
+      summary: "Prepare a new Payment that is not yet ready for User approval"
+      operationId: "PrepareReservationPayment"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/PrepareReservationPaymentRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Idempotency-Key"
+        in: "header"
+        description: "Used to ensure retried calls are handled correctly"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Payment prepared"
+          examples:
+            application/json:
+              paymentId: "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+          schema:
+            $ref: "#/definitions/PaymentInitiatedResponse"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "409":
+          description: "Payment could not be prepared. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/payments/{paymentId}/ready:
+    post:
+      tags:
+      - "Payments"
+      summary: "Mark Payment as ready for approval by User"
+      operationId: "PaymentReady"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "paymentId"
+        in: "path"
+        description: "paymentId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/PaymentReadyRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Payment ready for User approval"
+        "400":
+          description: "Bad Request. See error response for details"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Payment not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "Payment could not be marked ready. See error response for\
+            \ details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/payments/{paymentId}/capture:
+    post:
+      tags:
+      - "Payments"
+      summary: "Capture a Payment. Only reserved payments can be captured."
+      operationId: "CapturePayment"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "paymentId"
+        in: "path"
+        description: "PaymentId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/PaymentCaptureRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Payment has been captured"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Payment not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "Payment could not be captured. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/payments/{paymentId}/cancel:
+    post:
+      tags:
+      - "Payments"
+      summary: "Cancel a payment. A payment cannot be cancelled once it has been captured."
+      operationId: "CancelPayment"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "paymentId"
+        in: "path"
+        description: "PaymentId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Payment cancelled"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Payment not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "The payment could not be cancelled. See error response for\
+            \ details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Payments"
+  /api/v10/pointofsales/{posId}:
+    get:
+      tags:
+      - "PointOfSales"
+      summary: "Lookup a Point of Sale"
+      operationId: "GetPos"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "posId"
+        in: "path"
+        description: "PosId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "The Point of Sale"
+          examples:
+            application/json:
+              posId: "bc2a3687-539a-44d2-9e92-0d746dc90089"
+              merchantPosId: "My-Pos-1"
+              storeId: "939f2b0d-152e-4000-8e04-2e30aa9faf7f"
+              name: "Register 1"
+              beaconId: "123456789123456"
+              callback:
+                destination: "https://example.com"
+                type: "Url"
+              supportedBeaconTypes:
+              - "QR"
+              - "BluetoothMP2"
+          schema:
+            $ref: "#/definitions/PosResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Point of Sale not found"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "PointOfSales"
+    delete:
+      tags:
+      - "PointOfSales"
+      summary: "Delete a Point of Sale"
+      operationId: "DeletePos"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "posId"
+        in: "path"
+        description: "PosId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Point of Sale deleted"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Point of Sale not found"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "PointOfSales"
+  /api/v10/pointofsales:
+    get:
+      tags:
+      - "PointOfSales"
+      summary: "Lookup Point of Sales for a given filter"
+      operationId: "GetPosWithFilter"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeId"
+        in: "query"
+        description: "Restricts Point of Sales returned to those that belong to this\
+          \ Store"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "beaconId"
+        in: "query"
+        description: "Restricts Point of Sales returned to the one with this beaconId"
+        required: false
+        type: "string"
+      - name: "merchantPosId"
+        in: "query"
+        description: "Restricts Point of Sales returned to the one with this merchant\
+          \ PoS identifer"
+        required: false
+        type: "string"
+      - name: "active"
+        in: "query"
+        description: "Restricts Point of Sales returned to those that are active (i.e.,\
+          \ not deleted)"
+        required: false
+        type: "boolean"
+        default: true
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "A list of Point of Sales"
+          examples:
+            application/json:
+              posIds:
+              - "c0000a0f-68b8-4759-847b-08d5284c344c"
+          schema:
+            $ref: "#/definitions/PosIdsResponse"
+        "204":
+          description: "No Point of Sales found that match the filter"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "409":
+          description: "Conflict"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "PointOfSales"
+    post:
+      tags:
+      - "PointOfSales"
+      summary: "Create a Point of Sale"
+      operationId: "CreatePos"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/CreatePosRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Idempotency-Key"
+        in: "header"
+        description: "Used to ensure retried calls are handled correctly"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Point of Sale created"
+          examples:
+            application/json:
+              posId: "c0000a0f-68b8-4759-847b-08d5284c344c"
+          schema:
+            $ref: "#/definitions/CreatePosResponse"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+        "409":
+          description: "Point of Sale could not be created. See error response for\
+            \ details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "PointOfSales"
+  /api/v10/pointofsales/{posId}/checkin:
+    get:
+      tags:
+      - "PointOfSales"
+      summary: "Lookup the current MobilePay User information checked-in at a Point\
+        \ of Sale"
+      operationId: "GetCheckIn"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "posId"
+        in: "path"
+        description: "PosId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "MobilePay User info"
+          examples:
+            application/json:
+              isUserCheckedIn: true
+              loyaltyIds:
+              - "123456"
+              pollDelayInMs: 100
+          schema:
+            $ref: "#/definitions/GetCheckInResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Point of Sale not found"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "PointOfSales"
+  /api/v10/refunds/{refundId}:
+    get:
+      tags:
+      - "Refunds"
+      summary: "Lookup a Refund"
+      operationId: "GetRefund"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "refundId"
+        in: "path"
+        description: "RefundId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "The Refund"
+          examples:
+            application/json:
+              refundId: "6aee222f-703c-47f0-92ab-bc1c366b7d52"
+              paymentId: "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+              refundOrderId: "REFUND-12345"
+              amount: 12.5
+              currencyCode: "DKK"
+              status: "Reserved"
+              pollDelayInMs: 100
+          schema:
+            $ref: "#/definitions/RefundResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Refund not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Refunds"
+  /api/v10/refunds:
+    get:
+      tags:
+      - "Refunds"
+      summary: "Lookup Refunds for a given filter"
+      operationId: "QueryRefundIds"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "paymentId"
+        in: "query"
+        description: "Restricts Refunds returned to those that belongs to this paymentId"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "List of Refunds"
+          examples:
+            application/json:
+              refundIds:
+              - "6aee222f-703c-47f0-92ab-bc1c366b7d52"
+          schema:
+            $ref: "#/definitions/QueryRefundIdsResponse"
+        "204":
+          description: "No Refunds found matching the filter"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "409":
+          description: "Filter not specific enough"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Refunds"
+    post:
+      tags:
+      - "Refunds"
+      summary: "Create a refund (a payment can be refunded multiple times, the sum\
+        \ of the refunds cannot exceed the payment full amount)"
+      operationId: "CreateRefund"
+      consumes:
+      - "application/json-patch+json"
+      - "application/json"
+      - "text/json"
+      - "application/*+json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "request"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/CreateRefundRequest"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Idempotency-Key"
+        in: "header"
+        description: "Used to ensure retried calls are handled correctly"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Refund has been created"
+          examples:
+            application/json:
+              refundId: "6aee222f-703c-47f0-92ab-bc1c366b7d52"
+          schema:
+            $ref: "#/definitions/CreateRefundResponse"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Refund not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "Refund could not be created"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Refunds"
+  /api/v10/refunds/{refundId}/capture:
+    post:
+      tags:
+      - "Refunds"
+      summary: "Capture a refund"
+      operationId: "CaptureRefund"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "refundId"
+        in: "path"
+        description: "Refund id"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Refund captured"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Refund not found"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "Refund could not be captured"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Refunds"
+  /api/v10/refunds/{refundId}/cancel:
+    post:
+      tags:
+      - "Refunds"
+      summary: "Cancel a refund"
+      operationId: "CancelRefund"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "refundId"
+        in: "path"
+        description: "Refund id"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Refund cancelled"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Refund could not be cancelled"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "409":
+          description: "Conflict"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      x-swagger-router-controller: "Refunds"
+  /api/v10/stores/{storeId}:
+    get:
+      tags:
+      - "Stores"
+      summary: "Lookup a Store"
+      operationId: "GetStore"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeId"
+        in: "path"
+        description: "StoreId"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "The Store"
+          examples:
+            application/json:
+              storeName: "Store 1"
+              storeId: "939f2b0d-152e-4000-8e04-2e30aa9faf7f"
+              merchantBrandId: "POSDK12345"
+              merchantLocationId: "10001"
+          schema:
+            $ref: "#/definitions/StoreResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Store not found"
+      x-swagger-router-controller: "Stores"
+  /api/v10/stores:
+    get:
+      tags:
+      - "Stores"
+      summary: "Lookup Stores for a given filter"
+      operationId: "GetStores"
+      consumes: []
+      produces:
+      - "application/json"
+      parameters:
+      - name: "merchantBrandId"
+        in: "query"
+        description: "MerchantBrandId"
+        required: false
+        type: "string"
+      - name: "merchantLocationId"
+        in: "query"
+        description: "MerchantLocationId"
+        required: false
+        type: "string"
+      - name: "Authorization"
+        in: "header"
+        description: "Integrator's Bearer Token"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-Id"
+        in: "header"
+        description: "Integrator's MobilePay Client Id (Must be a valid GUID)"
+        required: true
+        type: "string"
+        format: "uuid"
+      - name: "X-MobilePay-Client-System-Name"
+        in: "header"
+        description: "Integrator's Certified System Name"
+        required: true
+        type: "string"
+      - name: "X-MobilePay-Client-System-Version"
+        in: "header"
+        description: "Integrator's Certified System Version"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "A list of Stores"
+          examples:
+            application/json:
+              storeIds:
+              - "939f2b0d-152e-4000-8e04-2e30aa9faf7f"
+          schema:
+            $ref: "#/definitions/StoreIdsResponse"
+        "400":
+          description: "Bad Request. See error response for details"
+          examples:
+            application/json:
+              code: "1234"
+              message: "Error message explaining the error that happened while processing\
+                \ the request"
+              correlationId: "ee216854-78ca-43c7-99f8-7ce6ee451019"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Stores not found"
+      x-swagger-router-controller: "Stores"
+definitions:
+  QueryPaymentResponse:
+    type: "object"
+    required:
+    - "orderId"
+    - "paymentId"
+    - "pollDelayInMs"
+    - "posId"
+    - "status"
+    properties:
+      paymentId:
+        type: "string"
+        format: "uuid"
+      posId:
+        type: "string"
+        format: "uuid"
+      orderId:
+        type: "string"
+      amount:
+        type: "number"
+        format: "double"
+      currencyCode:
+        type: "string"
+        enum:
+        - "DKK"
+        - "EUR"
+      restrictions:
+        $ref: "#/definitions/PaymentRestrictions"
+      merchantPaymentLabel:
+        type: "string"
+      plannedCaptureDelay:
+        type: "string"
+        enum:
+        - "None"
+        - "LessThan24Hours"
+        - "LessThan14Days"
+      status:
+        type: "string"
+        enum:
+        - "Prepared"
+        - "Initiated"
+        - "Paired"
+        - "IssuedToUser"
+        - "Reserved"
+        - "CancelledByUser"
+        - "CancelledByClient"
+        - "CancelledByMobilePay"
+        - "Captured"
+      customerToken:
+        type: "string"
+      customerReceiptToken:
+        type: "string"
+      loyaltyIds:
+        type: "array"
+        description: "If LoyaltyIds is null, MobilePay has not yet looked up loyalty\
+          \ for this user. Retry the call. \\\r\nIf LoyaltyIds is an empty list, this\
+          \ user is not enrolled in the Merchants loyalty programme."
+        items:
+          type: "string"
+      pollDelayInMs:
+        type: "integer"
+        format: "int32"
+  PaymentRestrictions:
+    type: "object"
+    properties:
+      debitCardDisallowed:
+        type: "boolean"
+      creditCardDisallowed:
+        type: "boolean"
+      userMinimumAge:
+        type: "integer"
+        format: "int32"
+    description: "Allow setting restriction on the payment methods and user for a\
+      \ payment"
+  ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "string"
+        readOnly: true
+      message:
+        type: "string"
+        readOnly: true
+      correlationId:
+        type: "string"
+        readOnly: true
+  QueryPaymentIdsResponse:
+    type: "object"
+    required:
+    - "paymentIds"
+    properties:
+      paymentIds:
+        type: "array"
+        items:
+          type: "string"
+          format: "uuid"
+  InitiateReservationPaymentRequest:
+    type: "object"
+    required:
+    - "amount"
+    - "currencyCode"
+    - "orderId"
+    - "plannedCaptureDelay"
+    - "posId"
+    properties:
+      posId:
+        type: "string"
+        format: "uuid"
+      orderId:
+        type: "string"
+      amount:
+        type: "number"
+        format: "double"
+      currencyCode:
+        type: "string"
+        enum:
+        - "DKK"
+        - "EUR"
+      restrictions:
+        $ref: "#/definitions/PaymentRestrictions"
+      merchantPaymentLabel:
+        type: "string"
+      plannedCaptureDelay:
+        type: "string"
+        enum:
+        - "None"
+        - "LessThan24Hours"
+        - "LessThan14Days"
+    example:
+      posId: "c0000a0f-68b8-4759-847b-08d5284c344c"
+      orderId: "ORDER-12345"
+      amount: 12.5
+      currencyCode: "DKK"
+      restrictions:
+        debitCardDisallowed: false
+        creditCardDisallowed: false
+        userMinimumAge: 18
+      merchantPaymentLabel: "PaymentLabel"
+      plannedCaptureDelay: "None"
+  PaymentInitiatedResponse:
+    type: "object"
+    required:
+    - "paymentId"
+    properties:
+      paymentId:
+        type: "string"
+        format: "uuid"
+  PrepareReservationPaymentRequest:
+    type: "object"
+    required:
+    - "orderId"
+    - "posId"
+    properties:
+      posId:
+        type: "string"
+        format: "uuid"
+      orderId:
+        type: "string"
+    example:
+      posId: "c0000a0f-68b8-4759-847b-08d5284c344c"
+      orderId: "ORDER-12345"
+  PaymentReadyRequest:
+    type: "object"
+    required:
+    - "amount"
+    - "currencyCode"
+    - "plannedCaptureDelay"
+    properties:
+      currencyCode:
+        type: "string"
+        enum:
+        - "DKK"
+        - "EUR"
+      amount:
+        type: "number"
+        format: "double"
+      restrictions:
+        $ref: "#/definitions/PaymentRestrictions"
+      merchantPaymentLabel:
+        type: "string"
+      plannedCaptureDelay:
+        type: "string"
+        enum:
+        - "None"
+        - "LessThan24Hours"
+        - "LessThan14Days"
+    example:
+      currencyCode: "DKK"
+      amount: 12.5
+      restrictions:
+        debitCardDisallowed: false
+        creditCardDisallowed: false
+        userMinimumAge: 18
+      merchantPaymentLabel: "PaymentLabel"
+      plannedCaptureDelay: "None"
+  PaymentCaptureRequest:
+    type: "object"
+    properties:
+      amount:
+        type: "number"
+        format: "double"
+    example:
+      amount: 12.5
+  PosResponse:
+    type: "object"
+    required:
+    - "merchantPosId"
+    - "name"
+    - "posId"
+    - "storeId"
+    properties:
+      posId:
+        type: "string"
+        format: "uuid"
+      merchantPosId:
+        type: "string"
+        description: "Merchant defined Id for the given Point Of Sale"
+      storeId:
+        type: "string"
+        format: "uuid"
+      name:
+        type: "string"
+      beaconId:
+        type: "string"
+        description: "Former PosUnit"
+      callback:
+        $ref: "#/definitions/Callback"
+      supportedBeaconTypes:
+        type: "array"
+        uniqueItems: true
+        items:
+          type: "string"
+          enum:
+          - "QR"
+          - "NFC"
+          - "BluetoothOther"
+          - "BluetoothMP1"
+          - "BluetoothMP2"
+          - "BluetoothMP3"
+          - "BluetoothMP4"
+  Callback:
+    type: "object"
+    properties:
+      destination:
+        type: "string"
+      type:
+        type: "string"
+        enum:
+        - "Url"
+        - "Alias"
+  CreatePosRequest:
+    type: "object"
+    required:
+    - "merchantPosId"
+    - "name"
+    - "storeId"
+    - "supportedBeaconTypes"
+    properties:
+      merchantPosId:
+        type: "string"
+        description: "Merchant defined Id for the given Point Of Sale"
+      storeId:
+        type: "string"
+        format: "uuid"
+      name:
+        type: "string"
+      beaconId:
+        type: "string"
+        description: "Former PosUnitId"
+      callback:
+        $ref: "#/definitions/Callback"
+      supportedBeaconTypes:
+        type: "array"
+        description: "List all the beacon type the Point of Sale supports for checkin:\
+          \ QR, Bluetooth"
+        uniqueItems: true
+        items:
+          type: "string"
+          enum:
+          - "QR"
+          - "NFC"
+          - "BluetoothOther"
+          - "BluetoothMP1"
+          - "BluetoothMP2"
+          - "BluetoothMP3"
+          - "BluetoothMP4"
+    example:
+      merchantPosId: "My-Pos-1"
+      storeId: "939f2b0d-152e-4000-8e04-2e30aa9faf7f"
+      name: "Register 1"
+      beaconId: "123456789123456"
+      callback:
+        destination: "https://example.com"
+        type: "Url"
+      supportedBeaconTypes:
+      - "QR"
+      - "BluetoothMP2"
+  CreatePosResponse:
+    type: "object"
+    required:
+    - "posId"
+    properties:
+      posId:
+        type: "string"
+        format: "uuid"
+  PosIdsResponse:
+    type: "object"
+    required:
+    - "posIds"
+    properties:
+      posIds:
+        type: "array"
+        items:
+          type: "string"
+          format: "uuid"
+  GetCheckInResponse:
+    type: "object"
+    required:
+    - "isUserCheckedIn"
+    - "loyaltyIds"
+    - "pollDelayInMs"
+    properties:
+      isUserCheckedIn:
+        type: "boolean"
+      loyaltyIds:
+        type: "array"
+        items:
+          type: "string"
+      pollDelayInMs:
+        type: "integer"
+        format: "int32"
+  RefundResponse:
+    type: "object"
+    required:
+    - "amount"
+    - "currencyCode"
+    - "paymentId"
+    - "pollDelayInMs"
+    - "refundId"
+    - "refundOrderId"
+    - "status"
+    properties:
+      refundId:
+        type: "string"
+        format: "uuid"
+      paymentId:
+        type: "string"
+        format: "uuid"
+      refundOrderId:
+        type: "string"
+      amount:
+        type: "number"
+        format: "double"
+      currencyCode:
+        type: "string"
+        enum:
+        - "DKK"
+        - "EUR"
+      status:
+        type: "string"
+        enum:
+        - "Initiated"
+        - "Reserved"
+        - "Captured"
+        - "CancelledByMerchant"
+        - "CancelledByMobilePay"
+      pollDelayInMs:
+        type: "integer"
+        format: "int32"
+  QueryRefundIdsResponse:
+    type: "object"
+    required:
+    - "refundIds"
+    properties:
+      refundIds:
+        type: "array"
+        items:
+          type: "string"
+          format: "uuid"
+  CreateRefundRequest:
+    type: "object"
+    required:
+    - "amount"
+    - "currencyCode"
+    - "paymentId"
+    - "refundOrderId"
+    properties:
+      paymentId:
+        type: "string"
+        format: "uuid"
+        description: "PaymentId of the payment to refund"
+      refundOrderId:
+        type: "string"
+      amount:
+        type: "number"
+        format: "double"
+        description: "Amount to refund (Cannot be more than the Payment's amount)"
+      currencyCode:
+        type: "string"
+        enum:
+        - "DKK"
+        - "EUR"
+    example:
+      paymentId: "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+      refundOrderId: "REFUND-12345"
+      amount: 12.5
+      currencyCode: "DKK"
+  CreateRefundResponse:
+    type: "object"
+    required:
+    - "refundId"
+    properties:
+      refundId:
+        type: "string"
+        format: "uuid"
+  StoreResponse:
+    type: "object"
+    required:
+    - "merchantBrandId"
+    - "merchantLocationId"
+    - "storeId"
+    - "storeName"
+    properties:
+      storeName:
+        type: "string"
+        description: "Store Name"
+      storeId:
+        type: "string"
+        format: "uuid"
+        description: "StoreId"
+      merchantBrandId:
+        type: "string"
+      merchantLocationId:
+        type: "string"
+  StoreIdsResponse:
+    type: "object"
+    required:
+    - "storeIds"
+    properties:
+      storeIds:
+        type: "array"
+        items:
+          type: "string"
+          format: "uuid"
+x-ibm-configuration:
+  enforced: true
+  testable: false
+  phase: "realized"
+x-ibm-endpoints:
+- endpointUrl: "https://api.sandbox.mobilepay.dk"
+  type:
+  - "production"
+  - "development"
