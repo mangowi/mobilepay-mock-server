@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# Source function library.
+. /etc/init.d/functions
+SERVICE_NAME=mobilepay-mock-server
+PID_FILE=/var/run/$SERVICE_NAME/pid
+SERVICE_DIR=/opt/external/$SERVICE_NAME
+# Print Banner
+echo ======================= SERVICE VARIABLES ========================
+echo ========= SERVICE_NAME: "$SERVICE_NAME"
+echo ============== PIDFILE: "$PID_FILE"
+echo ========== SERVICE_DIR: "$SERVICE_DIR"
+echo ==================================================================
+
+start() {
+	if  [ ! -f $PID_FILE ]; then
+		mkdir /var/run/$SERVICE_NAME 2> /dev/null
+		chown -R ${rpm.username}:${rpm.groupname} /var/run/$SERVICE_NAME
+		echo "Starting $SERVICE_NAME..."
+		su vcs_cegp -s /bin/sh -c "$SERVICE_DIR/bin/run.sh" 2> /dev/null &
+		echo $ > /var/run/$SERVICE_NAME/pid
+	else
+		echo "$SERVICE_NAME is already running"
+	fi
+	success
+	return 0;
+}
+
+stop() {
+	if [ -f $PID_FILE ]; then
+	 	echo "Stopping $SERVICE_NAME..."
+	 	PID=`cat $PID_FILE`
+		if ! [ -z "$PID" ]; then
+			CHILDPID=`pgrep -P $PID`
+			if ! [ -z "$CHILDPID" ]; then
+				SUBCHILDPID=`pgrep -P $CHILDPID`
+				kill $CHILDPID
+				if ! [ -z "$SUBCHILDPID" ]; then
+					kill $SUBCHILDPID
+				fi
+			fi
+			kill $PID
+			while [ -d /proc/$PID -a -z "`grep zombie /proc/$PID/status 2> /dev/null`" ] ; do
+			sleep 1
+			done
+			rm $PID_FILE
+			echo "$SERVICE_NAME stopped"
+		else
+			echo "$SERVICE_NAME is not running"
+		fi
+	 else
+	 	echo "$SERVICE_NAME is not running"
+	 fi
+	success
+	return 0
+}
+
+status() {
+	if test -f $PID_FILE && ps -p `cat $PID_FILE` > /dev/null; then
+		 PID=`cat $PID_FILE`
+	     echo "$SERVICE_NAME is running (pid $PID)"
+	else
+	    echo "$SERVICE_NAME is not running"
+	fi
+
+	return 0
+}
+
+
+
+case "$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    restart)
+        stop
+        start
+    ;;
+    status)
+        status
+    ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit 0
