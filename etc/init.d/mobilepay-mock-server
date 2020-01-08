@@ -15,9 +15,9 @@ echo ==================================================================
 start() {
 	if  [ ! -f $PID_FILE ]; then
 		mkdir /var/run/$SERVICE_NAME 2> /dev/null
-		chown -R ${rpm.username}:${rpm.groupname} /var/run/$SERVICE_NAME
+		chown -R vcs_cegp:vcs_cegp /var/run/$SERVICE_NAME
 		echo "Starting $SERVICE_NAME..."
-		su vcs_cegp -s /bin/sh -c "$SERVICE_DIR/bin/run.sh" 2> /dev/null &
+		su vcs_cegp -s /bin/sh -c "$SERVICE_DIR/bin/run-redhat.sh" 2> /dev/null &
 		echo $ > /var/run/$SERVICE_NAME/pid
 	else
 		echo "$SERVICE_NAME is already running"
