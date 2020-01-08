@@ -118,13 +118,18 @@ exports.prepareReservationPayment = function(request, authorization, xMobilePayC
  **/
 exports.queryPayment = function(paymentId, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
+    var statuses = ["Initiated", "IssuedToUser", "Reserved"];
+
     if (payments.has(paymentId)) {
       var count = payments.get(paymentId);
-      payments.set(paymentId, count + 1);
+      if ((count + 1) < statuses.length) {
+        count++;
+      }
+      payments.set(paymentId, count);
     } else {
       payments.set(paymentId, 0);
     }
-    var statuses = ["Prepared", "Initiated", "Paired", "IssuedToUser", "Reserved", "Captured"];
+
     var examples = {};
     examples['application/json'] = {
       "paymentId": "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
