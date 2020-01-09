@@ -11,7 +11,7 @@ let payments = new Map();
  * xMobilePayClientSystemVersion String Integrator's Certified System Version
  * no response value expected for this operation
  **/
-exports.cancelPayment = function(paymentId, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion) {
+exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     if (paymentId == "error") {
       var payload = {
@@ -38,7 +38,7 @@ exports.cancelPayment = function(paymentId, authorization, xMobilePayClientId, x
  * xMobilePayClientSystemVersion String Integrator's Certified System Version
  * no response value expected for this operation
  **/
-exports.capturePayment = function(paymentId, request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion) {
+exports.capturePayment = function(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -56,12 +56,12 @@ exports.capturePayment = function(paymentId, request, authorization, xMobilePayC
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
  * returns PaymentInitiatedResponse
  **/
-exports.initiateReservationPayment = function(request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion, xMobilePayIdempotencyKey) {
+exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-      "paymentId": "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
-    };
+  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+};
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -82,7 +82,7 @@ exports.initiateReservationPayment = function(request, authorization, xMobilePay
  * xMobilePayClientSystemVersion String Integrator's Certified System Version
  * no response value expected for this operation
  **/
-exports.paymentReady = function(paymentId, request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion) {
+exports.paymentReady = function(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -100,12 +100,12 @@ exports.paymentReady = function(paymentId, request, authorization, xMobilePayCli
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
  * returns PaymentInitiatedResponse
  **/
-exports.prepareReservationPayment = function(request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion, xMobilePayIdempotencyKey) {
+exports.prepareReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-      "paymentId": "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
-    };
+  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+};
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -125,7 +125,7 @@ exports.prepareReservationPayment = function(request, authorization, xMobilePayC
  * xMobilePayClientSystemVersion String Integrator's Certified System Version
  * returns QueryPaymentResponse
  **/
-exports.queryPayment = function(paymentId, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion) {
+exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     var statuses = ["Initiated", "IssuedToUser", "Reserved"];
 
@@ -141,24 +141,24 @@ exports.queryPayment = function(paymentId, authorization, xMobilePayClientId, xM
 
     var examples = {};
     examples['application/json'] = {
-      "paymentId": "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
-      "posId": "c0000a0f-68b8-4759-847b-08d5284c344c",
-      "orderId": "ORDER-12345",
-      "amount": 12.5,
-      "currencyCode": "DKK",
-      "restrictions": {
-        "debitCardDisallowed": false,
-        "creditCardDisallowed": false,
-        "userMinimumAge": 18
-      },
-      "merchantPaymentLabel": "PaymentLabel",
-      "plannedCaptureDelay": "None",
-      "status": statuses[payments.get(paymentId) % statuses.length],
-      "customerToken": "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
-      "customerReceiptToken": "671c4da4859a4639a5453120d791aac0",
-      "loyaltyIds": ["123456"],
-      "pollDelayInMs": 100
-    };
+  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
+  "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
+  "orderId" : "ORDER-12345",
+  "amount" : 12.5,
+  "currencyCode" : "DKK",
+  "restrictions" : {
+    "debitCardDisallowed" : false,
+    "creditCardDisallowed" : false,
+    "userMinimumAge" : 18
+  },
+  "merchantPaymentLabel" : "PaymentLabel",
+  "plannedCaptureDelay" : "None",
+  "status" : statuses[payments.get(paymentId) % statuses.length],
+  "customerToken" : "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
+  "customerReceiptToken" : "671c4da4859a4639a5453120d791aac0",
+  "loyaltyIds" : [ "123456" ],
+  "pollDelayInMs" : 100
+};
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -180,12 +180,12 @@ exports.queryPayment = function(paymentId, authorization, xMobilePayClientId, xM
  * active Boolean Restricts Payments returned to those that are active (optional)
  * returns QueryPaymentIdsResponse
  **/
-exports.queryPaymentIds = function(authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion, posId, orderId, active) {
+exports.queryPaymentIds = function(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-      "paymentIds": ["1cbfff94-3d17-4dc1-b667-5280e1ce50f9"]
-    };
+  "paymentIds" : [ "1cbfff94-3d17-4dc1-b667-5280e1ce50f9" ]
+};
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {

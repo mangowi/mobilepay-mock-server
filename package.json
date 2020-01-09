@@ -1,11 +1,11 @@
 {
   "name": "pos-v10-integrator-api",
-  "version": "1.0.16",
-  "description": "# Notice: The URL in `Example Request` is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/api/v10/...` ## PoS  V10 API  The API is split into 5 categories:  * **Brands**: Look up brands or stores based on brand  * **PointOfSales**: Management of Point of Sales including create, delete and querying. Note that a Point of Sale is not editable.  * **Refunds**: Everything needed in order to do a refund (create, cancel and look up)  * **Stores**: Look up store information  * **Payments**: Everything needed in order to initiate and complete a payment.   #### Payment flows Payments can be started in two ways: as an initiated payment that is immediatedly ready for user approval or as a prepared payment that is not yet ready for user approval and must be explicitly marked as ready. Once a payment is ready for user approval, it is issued to the user. Once the user accepts the payment request, and the payment amount has been reserved, the payment must be captured to complete the payment.  The API thus supports the following two payment flows: * Initiate payment (POST /payments) --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)  * Prepare payment (POST /payments/prepare) --> mark as ready (POST /payments/{paymentId}/ready) --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)",
+  "version": "1.0.18",
+  "description": "<span style=\"color:red\">**Notice!** The URL in `Example Request` is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/api/v10/...`</span> ## PoS  V10 API  The API is split into 5 categories:  * **Brands**: Look up brands or stores based on brand  * **PointOfSales**: Management of Point of Sales including create, delete and querying. Note that a Point of Sale is not editable.  * **Refunds**: Everything needed in order to do a refund (create, cancel and look up)  * **Stores**: Look up store information  * **Payments**: Everything needed in order to initiate and complete a payment.   #### Payment flows Payments can be started in two ways: as an initiated payment that is immediatedly ready for user approval or as a prepared payment that is not yet ready for user approval and must be explicitly marked as ready. Once a payment is ready for user approval, it is issued to the user. Once the user accepts the payment request, and the payment amount has been reserved, the payment must be captured to complete the payment.  The API thus supports the following two payment flows: * Initiate payment (POST /payments) --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)  * Prepare payment (POST /payments/prepare) --> mark as ready (POST /payments/{paymentId}/ready) --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)",
   "main": "index.js",
   "scripts": {
-    "prestart": "npm install",
-    "start": "node index.js"
+	"prestart": "npm install",
+	"start": "node index.js"
   },
   "keywords": [
     "swagger"
