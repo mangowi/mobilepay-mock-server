@@ -13,7 +13,7 @@ let payments = new Map();
  **/
 exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    if (paymentId == "error") {
+    if (paymentId == "00000000-0000-0000-0000-000000000000") {
       var payload = {
         "code": "code",
         "message": "error message",

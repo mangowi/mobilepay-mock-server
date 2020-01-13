@@ -11,7 +11,7 @@ module.exports.CancelPayment = function cancelPayment (req, res, next) {
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   Payments.cancelPayment(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
-      if (paymentId == "error") {
+      if (paymentId == "00000000-0000-0000-0000-000000000000") {
         response = utils.respondWithCode(500, response);
       }
       utils.writeJson(res, response);
