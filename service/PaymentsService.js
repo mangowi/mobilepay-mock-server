@@ -1,5 +1,7 @@
 'use strict';
 
+const uuid = require('uuid/v4');
+
 let payments = new Map();
 /**
  * Cancel a payment. A payment cannot be cancelled once it has been captured.
@@ -60,7 +62,7 @@ exports.initiateReservationPayment = function(request,authorization,xMobilePayCl
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+  "paymentId" : uuid()
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -141,7 +143,7 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobi
 
     var examples = {};
     examples['application/json'] = {
-  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
+  "paymentId" : paymentId,
   "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
   "orderId" : "ORDER-12345",
   "amount" : 12.5,
