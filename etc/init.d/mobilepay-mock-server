@@ -18,7 +18,7 @@ start() {
 		chown -R vcs_cegp:vcs_cegp /var/run/$SERVICE_NAME
 		echo "Starting $SERVICE_NAME..."
 		su vcs_cegp -s /bin/sh -c "$SERVICE_DIR/bin/run-redhat.sh" 2> /dev/null &
-		echo $ > /var/run/$SERVICE_NAME/pid
+		echo $! > /var/run/$SERVICE_NAME/pid
 	else
 		echo "$SERVICE_NAME is already running"
 	fi
