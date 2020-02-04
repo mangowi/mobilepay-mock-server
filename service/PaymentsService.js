@@ -3,11 +3,9 @@
 const uuid = require('uuid/v4');
 
 const PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = "00000000-0000-0000-0000-000000000000";
-const PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS = "00000000-0000-0000-0000-000000000001";
 const MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS = "0000";
 
 exports.PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR;
-exports.PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS = PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS;
 
 let payments = new Map();
 /**
@@ -68,15 +66,15 @@ exports.capturePayment = function(paymentId,request,authorization,xMobilePayClie
 exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     var examples = {};
+    var paymentId = uuid();
     if (request.merchantPaymentLabel == MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS) {
-      examples['application/json'] = {
-        "paymentId": PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS
-      };
+      payments.set(paymentId, {count: -1, cancelByUser: true});
     } else {
-      examples['application/json'] = {
-        "paymentId" : uuid()
-      };
+      payments.set(paymentId, {count: -1, cancelByUser: false});
     }
+    examples['application/json'] = {
+      "paymentId": paymentId
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -144,7 +142,7 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobi
   var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
   var cancelledByUserFlowStatuses = ["Initiated", "IssuedToUser", "CancelledByUser"];
 
-  if(paymentId == PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS) {
+  if(payments.has(paymentId) && payments.get(paymentId).cancelByUser == true) {
     return queryPaymentInternal(paymentId, cancelledByUserFlowStatuses);
   } else {
     return queryPaymentInternal(paymentId, statuses);
@@ -154,13 +152,14 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobi
 let queryPaymentInternal = function(paymentId, statuses) {
   return new Promise(function(resolve, reject) {
     if (payments.has(paymentId)) {
-      var count = payments.get(paymentId);
-      if ((count + 1) < statuses.length) {
-        count++;
+      var payment = payments.get(paymentId);
+      var count = payment.count;
+      if ((payment.count + 1) < statuses.length) {
+        payment.count++;
       }
-      payments.set(paymentId, count);
+      payments.set(paymentId, payment);
     } else {
-      payments.set(paymentId, 0);
+      payments.set(paymentId, {count: 0, cancelByUser : false});
     }
 
     var examples = {};
@@ -177,7 +176,7 @@ let queryPaymentInternal = function(paymentId, statuses) {
   },
   "merchantPaymentLabel" : "PaymentLabel",
   "plannedCaptureDelay" : "None",
-  "status" : statuses[payments.get(paymentId) % statuses.length],
+  "status" : statuses[payments.get(paymentId).count % statuses.length],
   "customerToken" : "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
   "customerReceiptToken" : "671c4da4859a4639a5453120d791aac0",
   "loyaltyIds" : [ "123456" ],
