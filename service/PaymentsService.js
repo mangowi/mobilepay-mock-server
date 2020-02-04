@@ -2,6 +2,13 @@
 
 const uuid = require('uuid/v4');
 
+const PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = "00000000-0000-0000-0000-000000000000";
+const PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS = "00000000-0000-0000-0000-000000000001";
+const MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS = "0000";
+
+exports.PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR;
+exports.PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS = PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS;
+
 let payments = new Map();
 /**
  * Cancel a payment. A payment cannot be cancelled once it has been captured.
@@ -15,7 +22,7 @@ let payments = new Map();
  **/
 exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    if (paymentId == "00000000-0000-0000-0000-000000000000") {
+    if (paymentId == PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR) {
       var payload = {
         "code": "code",
         "message": "error message",
@@ -61,9 +68,15 @@ exports.capturePayment = function(paymentId,request,authorization,xMobilePayClie
 exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     var examples = {};
-    examples['application/json'] = {
-  "paymentId" : uuid()
-};
+    if (request.merchantPaymentLabel == MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS) {
+      examples['application/json'] = {
+        "paymentId": PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS
+      };
+    } else {
+      examples['application/json'] = {
+        "paymentId" : uuid()
+      };
+    }
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -128,9 +141,18 @@ exports.prepareReservationPayment = function(request,authorization,xMobilePayCli
  * returns QueryPaymentResponse
  **/
 exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  return new Promise(function(resolve, reject) {
-    var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
+  var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
+  var cancelledByUserFlowStatuses = ["Initiated", "IssuedToUser", "CancelledByUser"];
 
+  if(paymentId == PAYMENT_ID_RESULTS_IN_CANCELLED_BY_USER_STATUS) {
+    return queryPaymentInternal(paymentId, cancelledByUserFlowStatuses);
+  } else {
+    return queryPaymentInternal(paymentId, statuses);
+  }
+}
+
+let queryPaymentInternal = function(paymentId, statuses) {
+  return new Promise(function(resolve, reject) {
     if (payments.has(paymentId)) {
       var count = payments.get(paymentId);
       if ((count + 1) < statuses.length) {
