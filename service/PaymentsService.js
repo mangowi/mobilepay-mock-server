@@ -129,7 +129,7 @@ exports.prepareReservationPayment = function(request,authorization,xMobilePayCli
  **/
 exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
+    var statuses = ["Initiated", "IssuedToUser", "Reserved"];
 
     if (payments.has(paymentId)) {
       var count = payments.get(paymentId);
