@@ -11,6 +11,9 @@ module.exports.CancelRefund = function cancelRefund (req, res, next) {
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   Refunds.cancelRefund(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
+      if (refundId == Refunds.REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR) {
+        response = utils.respondWithCode(500, response);
+      }
       utils.writeJson(res, response);
     })
     .catch(function (response) {

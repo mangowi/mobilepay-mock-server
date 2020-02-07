@@ -2,7 +2,11 @@
 
 const uuid = require('uuid/v4');
 
+const REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR = "00000000-0000-0000-0000-000000000000";
+
 let refunds = new Map();
+
+exports.REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR = REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR;
 /**
  * Cancel a refund
  *
@@ -15,7 +19,16 @@ let refunds = new Map();
  **/
 exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    resolve();
+    if (refundId == REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR) {
+      var payload = {
+        "code": "code",
+        "message": "error message",
+        "correlationId": "correlationId"
+      };
+      resolve(payload);
+    } else {
+      resolve();
+    }
   });
 }
 
