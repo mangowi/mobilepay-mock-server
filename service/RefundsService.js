@@ -1,6 +1,8 @@
 'use strict';
 
+const uuid = require('uuid/v4');
 
+let refunds = new Map();
 /**
  * Cancel a refund
  *
@@ -38,7 +40,7 @@ exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobi
 /**
  * Create a refund (a payment can be refunded multiple times, the sum of the refunds cannot exceed the payment full amount)
  *
- * request CreateRefundRequest 
+ * request CreateRefundRequest
  * authorization String Integrator's Bearer Token
  * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
  * xMobilePayClientSystemName String Integrator's Certified System Name
@@ -48,9 +50,10 @@ exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobi
  **/
 exports.createRefund = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
+    var refundId = uuid();
     var examples = {};
     examples['application/json'] = {
-  "refundId" : "6aee222f-703c-47f0-92ab-bc1c366b7d52"
+  "refundId" : refundId
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -72,15 +75,28 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
  * returns RefundResponse
  **/
 exports.getRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+  var statuses = ["Initiated", "Reserved", "Captured"];
+
+  if (refunds.has(refundId)) {
+    var refund = refunds.get(refundId);
+    var count = refund.count;
+    if ((refund.count + 1) < statuses.length) {
+      refund.count++;
+    }
+    refunds.set(refundId, refund);
+  } else {
+    refunds.set(refundId, {count: 0});
+  }
+
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "refundId" : "6aee222f-703c-47f0-92ab-bc1c366b7d52",
+  "refundId" : refundId,
   "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
   "refundOrderId" : "REFUND-12345",
   "amount" : 12.5,
   "currencyCode" : "DKK",
-  "status" : "Reserved",
+  "status" : statuses[refunds.get(refundId).count % statuses.length],
   "pollDelayInMs" : 100
 };
     if (Object.keys(examples).length > 0) {
@@ -115,4 +131,3 @@ exports.queryRefundIds = function(authorization,xMobilePayClientId,xMobilePayCli
     }
   });
 }
-
