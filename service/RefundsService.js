@@ -1,12 +1,12 @@
 'use strict';
 
 const uuid = require('uuid/v4');
-
-const REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR = "00000000-0000-0000-0000-000000000000";
+const utils = require('../utils/writer.js');
+const merchantPaymentLabel = require('../utils/MerchantPaymentLabelCodes');
+const Payments = require('./PaymentsService');
 
 let refunds = new Map();
 
-exports.REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR = REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR;
 /**
  * Cancel a refund
  *
@@ -19,13 +19,16 @@ exports.REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR = REFUND_ID_CANCEL_REFUND_RESUL
  **/
 exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    if (refundId == REFUND_ID_CANCEL_REFUND_RESULTS_IN_ERROR) {
+    var refund = refunds.get(refundId);
+    var payments = Payments.getPayments();
+
+    if(refund != null && payments.has(refund.paymentId) && payments.get(refund.paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION) {
       var payload = {
         "code": "code",
         "message": "error message",
         "correlationId": "correlationId"
       };
-      resolve(payload);
+      resolve(utils.respondWithCode(500, payload));
     } else {
       resolve();
     }
@@ -64,14 +67,21 @@ exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobi
 exports.createRefund = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     var refundId = uuid();
-    var examples = {};
-    examples['application/json'] = {
-  "refundId" : refundId
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
+    var paymentId = request.paymentId;
+    refunds.set(refundId, {count: -1, paymentId: paymentId});
+    var payments = Payments.getPayments();
+    if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION) {
+      var payload = {
+        'code': 'code',
+        'message': 'message',
+        'correlationId': 'correlationId'
+      };
+      resolve(utils.respondWithCode(500, payload));
     } else {
-      resolve();
+      var payload = {
+        "refundId" : refundId
+      };
+      resolve(payload);
     }
   });
 }
@@ -98,25 +108,41 @@ exports.getRefund = function(refundId,authorization,xMobilePayClientId,xMobilePa
     }
     refunds.set(refundId, refund);
   } else {
-    refunds.set(refundId, {count: 0});
+    refunds.set(refundId, {count: 0, paymentId: uuid()});
   }
 
+  var refund = refunds.get(refundId);
+  var payments = Payments.getPayments();
+  if (payments.has(refund.paymentId) && payments.get(refund.paymentId).merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION) {
+    return getRefundException('code', 'message', 'correlationId');
+  } else {
+    return getRefundInternal(refundId, refund, statuses);
+  }
+}
+
+let getRefundException = function(code, message, correlationId) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "refundId" : refundId,
-  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9",
-  "refundOrderId" : "REFUND-12345",
-  "amount" : 12.5,
-  "currencyCode" : "DKK",
-  "status" : statuses[refunds.get(refundId).count % statuses.length],
-  "pollDelayInMs" : 100
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
+    var payload = {
+      'code': code,
+      'message': message,
+      'correlationId': correlationId
+    };
+    resolve(utils.respondWithCode(500, payload));
+  });
+}
+
+let getRefundInternal = function(refundId, refund, statuses) {
+  return new Promise(function(resolve, reject) {
+    var payload = {
+      "refundId" : refundId,
+      "paymentId" : refund.paymentId,
+      "refundOrderId" : "REFUND-12345",
+      "amount" : 12.5,
+      "currencyCode" : "DKK",
+      "status" : statuses[refunds.get(refundId).count % statuses.length],
+      "pollDelayInMs" : 100
+    };
+    resolve(payload);
   });
 }
 

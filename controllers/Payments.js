@@ -11,12 +11,10 @@ module.exports.CancelPayment = function cancelPayment (req, res, next) {
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   Payments.cancelPayment(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
-      if (paymentId == Payments.PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR) {
-        response = utils.respondWithCode(500, response);
-      }
       utils.writeJson(res, response);
     })
     .catch(function (response) {
+      console.error(response);
       utils.writeJson(res, response);
     });
 };
@@ -49,6 +47,7 @@ module.exports.InitiateReservationPayment = function initiateReservationPayment 
       utils.writeJson(res, response);
     })
     .catch(function (response) {
+      console.error(response);
       utils.writeJson(res, response);
     });
 };
@@ -96,6 +95,7 @@ module.exports.QueryPayment = function queryPayment (req, res, next) {
       utils.writeJson(res, response);
     })
     .catch(function (response) {
+      console.error(response);
       utils.writeJson(res, response);
     });
 };

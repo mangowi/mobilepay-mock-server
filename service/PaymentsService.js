@@ -1,13 +1,14 @@
 'use strict';
 
 const uuid = require('uuid/v4');
-
-const PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = "00000000-0000-0000-0000-000000000000";
-const MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS = "0000";
-
-exports.PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR = PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR;
+const utils = require('../utils/writer.js');
+const merchantPaymentLabel = require('../utils/MerchantPaymentLabelCodes');
 
 let payments = new Map();
+
+exports.getPayments = function() {
+  return payments;
+}
 /**
  * Cancel a payment. A payment cannot be cancelled once it has been captured.
  *
@@ -20,13 +21,13 @@ let payments = new Map();
  **/
 exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
-    if (paymentId == PAYMENT_ID_CANCEL_PAYMENT_RESULTS_IN_ERROR) {
+    if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
       var payload = {
         "code": "code",
         "message": "error message",
         "correlationId": "correlationId"
       };
-      resolve(payload);
+      resolve(utils.respondWithCode(500, payload));
     } else {
       resolve();
     }
@@ -65,20 +66,20 @@ exports.capturePayment = function(paymentId,request,authorization,xMobilePayClie
  **/
 exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
     var paymentId = uuid();
-    if (request.merchantPaymentLabel == MERCHANT_PAYMENT_LABEL_TO_RESULT_IN_CANCELLED_BY_USER_STATUS) {
-      payments.set(paymentId, {count: -1, cancelByUser: true});
+    payments.set(paymentId, {count: -1, merchantPaymentLabel: request.merchantPaymentLabel});
+    if (request.merchantPaymentLabel == merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
+      var payload = {
+        'code': 'code',
+        'message': 'message',
+        'correlationId': 'correlationId'
+      };
+      resolve(utils.respondWithCode(500, payload));
     } else {
-      payments.set(paymentId, {count: -1, cancelByUser: false});
-    }
-    examples['application/json'] = {
-      "paymentId": paymentId
-    };
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+      var payload = {
+        "paymentId": paymentId
+      };
+      resolve(payload);
     }
   });
 }
@@ -142,8 +143,10 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobi
   var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
   var cancelledByUserFlowStatuses = ["Initiated", "IssuedToUser", "CancelledByUser"];
 
-  if(payments.has(paymentId) && payments.get(paymentId).cancelByUser == true) {
+  if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
     return queryPaymentInternal(paymentId, cancelledByUserFlowStatuses);
+  } else if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
+    return queryPaymentException('code', 'message', 'correlationId');
   } else {
     return queryPaymentInternal(paymentId, statuses);
   }
@@ -159,34 +162,40 @@ let queryPaymentInternal = function(paymentId, statuses) {
       }
       payments.set(paymentId, payment);
     } else {
-      payments.set(paymentId, {count: 0, cancelByUser : false});
+      payments.set(paymentId, {count: 0, merchantPaymentLabel: ''});
     }
 
-    var examples = {};
-    examples['application/json'] = {
-  "paymentId" : paymentId,
-  "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
-  "orderId" : "ORDER-12345",
-  "amount" : 12.5,
-  "currencyCode" : "DKK",
-  "restrictions" : {
-    "debitCardDisallowed" : false,
-    "creditCardDisallowed" : false,
-    "userMinimumAge" : 18
-  },
-  "merchantPaymentLabel" : "PaymentLabel",
-  "plannedCaptureDelay" : "None",
-  "status" : statuses[payments.get(paymentId).count % statuses.length],
-  "customerToken" : "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
-  "customerReceiptToken" : "671c4da4859a4639a5453120d791aac0",
-  "loyaltyIds" : [ "123456" ],
-  "pollDelayInMs" : 100
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
+    var payload = {
+      "paymentId" : paymentId,
+      "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
+      "orderId" : "ORDER-12345",
+      "amount" : 12.5,
+      "currencyCode" : "DKK",
+      "restrictions" : {
+        "debitCardDisallowed" : false,
+        "creditCardDisallowed" : false,
+        "userMinimumAge" : 18
+      },
+      "merchantPaymentLabel" : "PaymentLabel",
+      "plannedCaptureDelay" : "None",
+      "status" : statuses[payments.get(paymentId).count % statuses.length],
+      "customerToken" : "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
+      "customerReceiptToken" : "671c4da4859a4639a5453120d791aac0",
+      "loyaltyIds" : [ "123456" ],
+      "pollDelayInMs" : 100
+    };
+    resolve(payload);
+  });
+}
+
+let queryPaymentException = function(code, message, correlationId) {
+  return new Promise(function(resolve, reject) {
+    var payload = {
+      'code': code,
+      'message': message,
+      'correlationId': correlationId
+    };
+    resolve(utils.respondWithCode(500, payload));
   });
 }
 
