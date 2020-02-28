@@ -142,9 +142,12 @@ exports.prepareReservationPayment = function(request,authorization,xMobilePayCli
 exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
   var cancelledByUserFlowStatuses = ["Initiated", "IssuedToUser", "CancelledByUser"];
+  var cancelledByMobilePayStatuses = ["Initiated", "CancelledByMobilePay"];
 
   if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
     return queryPaymentInternal(paymentId, cancelledByUserFlowStatuses);
+  } else if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_MOBILEPAY_STATUS) {
+    return queryPaymentInternal(paymentId, cancelledByMobilePayStatuses);
   } else if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
     return queryPaymentException('code', 'message', 'correlationId');
   } else {
