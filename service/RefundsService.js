@@ -22,13 +22,19 @@ exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobil
     var refund = refunds.get(refundId);
     var payments = Payments.getPayments();
 
-    if(refund != null && payments.has(refund.paymentId) && payments.get(refund.paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION) {
-      var payload = {
-        "code": "code",
-        "message": "error message",
-        "correlationId": "correlationId"
-      };
-      resolve(utils.respondWithCode(500, payload));
+    if (refund != null && payments.has(refund.paymentId)) {
+      var payment = payments.get(refund.paymentId);
+      if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION
+          || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
+        var payload = {
+          "code": "code",
+          "message": "error message",
+          "correlationId": "correlationId"
+        };
+        resolve(utils.respondWithCode(500, payload));
+      } else {
+        resolve();
+      }
     } else {
       resolve();
     }
@@ -113,8 +119,14 @@ exports.getRefund = function(refundId,authorization,xMobilePayClientId,xMobilePa
 
   var refund = refunds.get(refundId);
   var payments = Payments.getPayments();
-  if (payments.has(refund.paymentId) && payments.get(refund.paymentId).merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION) {
-    return getRefundException('code', 'message', 'correlationId');
+  if (payments.has(refund.paymentId)) {
+    var payment = payments.get(refund.paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION
+        || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
+      return getRefundException('code', 'message', 'correlationId');
+    } else {
+      return getRefundInternal(refundId, refund, statuses);
+    }
   } else {
     return getRefundInternal(refundId, refund, statuses);
   }
