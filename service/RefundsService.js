@@ -83,6 +83,13 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
         'correlationId': 'correlationId'
       };
       resolve(utils.respondWithCode(500, payload));
+    } if else(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
+      var payload = {
+        'code': '1401',
+        'message': 'message',
+        'correlationId': 'correlationId'
+      };
+      resolve(utils.respondWithCode(403, payload));
     } else {
       var payload = {
         "refundId" : refundId
