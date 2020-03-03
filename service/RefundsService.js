@@ -85,7 +85,7 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
       resolve(utils.respondWithCode(500, payload));
     } if else(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
       var payload = {
-        'code': '1401',
+        'code': 'code',
         'message': 'message',
         'correlationId': 'correlationId'
       };
