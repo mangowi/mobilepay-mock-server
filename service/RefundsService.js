@@ -4,6 +4,7 @@ const uuid = require('uuid/v4');
 const utils = require('../utils/writer.js');
 const merchantPaymentLabel = require('../utils/MerchantPaymentLabelCodes');
 const Payments = require('./PaymentsService');
+const statuses = require('../utils/MobilePayStatuses.js');
 
 let refunds = new Map();
 
@@ -18,26 +19,27 @@ let refunds = new Map();
  * no response value expected for this operation
  **/
 exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  return new Promise(function(resolve, reject) {
+  var payments = Payments.getPayments();
+  if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
-    var payments = Payments.getPayments();
-
-    if (refund != null && payments.has(refund.paymentId)) {
-      var payment = payments.get(refund.paymentId);
-      if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION
-          || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
-        var payload = {
-          "code": "code",
-          "message": "error message",
-          "correlationId": "correlationId"
-        };
-        resolve(utils.respondWithCode(500, payload));
-      } else {
-        resolve();
-      }
+    var payment = payments.get(refund.paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION
+        || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (refund.status == statuses.CAPTURED) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
-      resolve();
+      refund.status = statuses.CANCELLEDBYCLIENT;
+      return cancelPaymentInternal();
     }
+  } else {
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
+  }
+}
+
+let cancelRefundInternal = function() {
+  return new Promise(function(resolve, reject) {
+    resolve();
   });
 }
 
@@ -53,6 +55,20 @@ exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobil
  * no response value expected for this operation
  **/
 exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+  if (refunds.has(refundId)) {
+    var refund = refunds.get(refundId);
+    if (refund.status == statuses.RESERVED) {
+      refund.status = statuses.CAPTURED;
+      return captureRefundInternal();
+    } else {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    }
+  } else {
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
+  }
+}
+
+let captureRefundInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -71,31 +87,39 @@ exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobi
  * returns CreateRefundResponse
  **/
 exports.createRefund = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
-  return new Promise(function(resolve, reject) {
-    var refundId = uuid();
-    var paymentId = request.paymentId;
-    refunds.set(refundId, {count: -1, paymentId: paymentId});
-    var payments = Payments.getPayments();
-    if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION) {
-      var payload = {
-        'code': 'code',
-        'message': 'message',
-        'correlationId': 'correlationId'
-      };
-      resolve(utils.respondWithCode(500, payload));
-    } else if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
-      var payload = {
-        'code': 'code',
-        'message': 'message',
-        'correlationId': 'correlationId'
-      };
-      resolve(utils.respondWithCode(403, payload));
+  var payments = Payments.getPayments();
+  var refundId = uuid();
+  var paymentId = request.paymentId;
+  if (payments.has(paymentId)) {
+    var payment = payments.get(paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
+      return prepareErrorResponse(403, 'code', 'message', 'correlationId');
+    } else if (payment.status != statuses.CAPTURED) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
-      var payload = {
-        "refundId" : refundId
-      };
-      resolve(payload);
+      refunds.set(
+        refundId,
+        {
+          id: refundId,
+          paymentId: paymentId,
+          status: null
+        }
+      );
+      return createRefundInternal(refundId);
     }
+  } else {
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
+  }
+}
+
+let createRefundInternal = function(refundId) {
+  return new Promise(function(resolve, reject) {
+    var payload = {
+      "refundId" : refundId
+    };
+    resolve(payload);
   });
 }
 
@@ -111,54 +135,47 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
  * returns RefundResponse
  **/
 exports.getRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  var statuses = ["Initiated", "Reserved", "Captured"];
-
+  var payments = Payments.getPayments();
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
-    var count = refund.count;
-    if ((refund.count + 1) < statuses.length) {
-      refund.count++;
-    }
-    refunds.set(refundId, refund);
-  } else {
-    refunds.set(refundId, {count: 0, paymentId: uuid()});
-  }
-
-  var refund = refunds.get(refundId);
-  var payments = Payments.getPayments();
-  if (payments.has(refund.paymentId)) {
     var payment = payments.get(refund.paymentId);
     if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION
         || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
-      return getRefundException('code', 'message', 'correlationId');
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (refund.status == null) {
+      refund.status = statuses.INITIATED;
+      return getRefundInternal(refund);
+    } else if (refund.status == statuses.INITIATED) {
+      refund.status = statuses.RESERVED;
+      return getRefundInternal(refund);
     } else {
-      return getRefundInternal(refundId, refund, statuses);
+      return getRefundInternal(refund);
     }
   } else {
-    return getRefundInternal(refundId, refund, statuses);
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
 }
 
-let getRefundException = function(code, message, correlationId) {
+let prepareErrorResponse = function(httpCode, code, message, correlationId) {
   return new Promise(function(resolve, reject) {
     var payload = {
       'code': code,
       'message': message,
       'correlationId': correlationId
     };
-    resolve(utils.respondWithCode(500, payload));
+    resolve(utils.respondWithCode(httpCode, payload));
   });
 }
 
-let getRefundInternal = function(refundId, refund, statuses) {
+let getRefundInternal = function(refund) {
   return new Promise(function(resolve, reject) {
     var payload = {
-      "refundId" : refundId,
+      "refundId" : refund.id,
       "paymentId" : refund.paymentId,
       "refundOrderId" : "REFUND-12345",
       "amount" : 12.5,
       "currencyCode" : "DKK",
-      "status" : statuses[refunds.get(refundId).count % statuses.length],
+      "status" : refund.status,
       "pollDelayInMs" : 100
     };
     resolve(payload);

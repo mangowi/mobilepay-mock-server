@@ -3,6 +3,7 @@
 const uuid = require('uuid/v4');
 const utils = require('../utils/writer.js');
 const merchantPaymentLabel = require('../utils/MerchantPaymentLabelCodes');
+const statuses = require('../utils/MobilePayStatuses.js');
 
 let payments = new Map();
 
@@ -20,20 +21,26 @@ exports.getPayments = function() {
  * no response value expected for this operation
  **/
 exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  return new Promise(function(resolve, reject) {
-    if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
-      var payload = {
-        "code": "code",
-        "message": "error message",
-        "correlationId": "correlationId"
-      };
-      resolve(utils.respondWithCode(500, payload));
+  if (payments.has(paymentId)) {
+    var payment = payments.get(paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.status == statuses.CAPTURED) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
-      resolve();
+      payment.status = statuses.CANCELLEDBYCLIENT;
+      return cancelPaymentInternal();
     }
-  });
+  } else {
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
+  }
 }
 
+let cancelPaymentInternal = function() {
+  return new Promise(function(resolve, reject) {
+    resolve();
+  });
+}
 
 /**
  * Capture a Payment. Only reserved payments can be captured.
@@ -47,6 +54,20 @@ exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMob
  * no response value expected for this operation
  **/
 exports.capturePayment = function(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+  if (payments.has(paymentId)) {
+    var payment = payments.get(paymentId);
+    if (payment.status == statuses.RESERVED) {
+      payment.status = statuses.CAPTURED;
+      return capturePaymentInternal();
+    } else {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    }
+  } else {
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
+  }
+}
+
+let capturePaymentInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -66,8 +87,6 @@ exports.capturePayment = function(paymentId,request,authorization,xMobilePayClie
  **/
 exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
-    var paymentId = uuid();
-    payments.set(paymentId, {count: -1, merchantPaymentLabel: request.merchantPaymentLabel});
     if (request.merchantPaymentLabel == merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
       var payload = {
         'code': 'code',
@@ -76,6 +95,16 @@ exports.initiateReservationPayment = function(request,authorization,xMobilePayCl
       };
       resolve(utils.respondWithCode(500, payload));
     } else {
+      var paymentId = uuid();
+      payments.set(
+        paymentId,
+        {
+          id: paymentId,
+          merchantPaymentLabel: request.merchantPaymentLabel,
+          status: null
+        }
+      );
+
       var payload = {
         "paymentId": paymentId
       };
@@ -140,36 +169,37 @@ exports.prepareReservationPayment = function(request,authorization,xMobilePayCli
  * returns QueryPaymentResponse
  **/
 exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  var statuses = ["Initiated", "IssuedToUser", "Reserved", "Captured"];
-  var cancelledByUserFlowStatuses = ["Initiated", "IssuedToUser", "CancelledByUser"];
-  var cancelledByMobilePayStatuses = ["Initiated", "CancelledByMobilePay"];
-
-  if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
-    return queryPaymentInternal(paymentId, cancelledByUserFlowStatuses);
-  } else if(payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_MOBILEPAY_STATUS) {
-    return queryPaymentInternal(paymentId, cancelledByMobilePayStatuses);
-  } else if (payments.has(paymentId) && payments.get(paymentId).merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
-    return queryPaymentException('code', 'message', 'correlationId');
+  if (payments.has(paymentId)) {
+    var payment = payments.get(paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.status == null) {
+      payment.status = statuses.INITIATED;
+      return queryPaymentInternal(payment);
+    } else if (payment.status == statuses.INITIATED && payment.merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_MOBILEPAY_STATUS) {
+      payment.status = statuses.CANCELLEDBYMOBILEPAY;
+      return queryPaymentInternal(payment);
+    } else if (payment.status == statuses.INITIATED) {
+      payment.status = statuses.ISSUEDTOUSER;
+      return queryPaymentInternal(payment);
+    } else if (payment.status == statuses.ISSUEDTOUSER && payment.merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
+      payment.status = statuses.CANCELLEDBYUSER;
+      return queryPaymentInternal(payment);
+    } else if (payment.status == statuses.ISSUEDTOUSER) {
+      payment.status = statuses.RESERVED;
+      return queryPaymentInternal(payment);
+    } else {
+      return queryPaymentInternal(payment);
+    }
   } else {
-    return queryPaymentInternal(paymentId, statuses);
+    return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
 }
 
-let queryPaymentInternal = function(paymentId, statuses) {
+let queryPaymentInternal = function(payment) {
   return new Promise(function(resolve, reject) {
-    if (payments.has(paymentId)) {
-      var payment = payments.get(paymentId);
-      var count = payment.count;
-      if ((payment.count + 1) < statuses.length) {
-        payment.count++;
-      }
-      payments.set(paymentId, payment);
-    } else {
-      payments.set(paymentId, {count: 0, merchantPaymentLabel: ''});
-    }
-
     var payload = {
-      "paymentId" : paymentId,
+      "paymentId" : payment.id,
       "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
       "orderId" : "ORDER-12345",
       "amount" : 12.5,
@@ -181,7 +211,7 @@ let queryPaymentInternal = function(paymentId, statuses) {
       },
       "merchantPaymentLabel" : "PaymentLabel",
       "plannedCaptureDelay" : "None",
-      "status" : statuses[payments.get(paymentId).count % statuses.length],
+      "status" : payment.status,
       "customerToken" : "41e519d3b5ac1a228bd15fab8958f1d9b4ee28eb",
       "customerReceiptToken" : "671c4da4859a4639a5453120d791aac0",
       "loyaltyIds" : [ "123456" ],
@@ -191,14 +221,14 @@ let queryPaymentInternal = function(paymentId, statuses) {
   });
 }
 
-let queryPaymentException = function(code, message, correlationId) {
+let prepareErrorResponse = function(httpCode, code, message, correlationId) {
   return new Promise(function(resolve, reject) {
     var payload = {
       'code': code,
       'message': message,
       'correlationId': correlationId
     };
-    resolve(utils.respondWithCode(500, payload));
+    resolve(utils.respondWithCode(httpCode, payload));
   });
 }
 
