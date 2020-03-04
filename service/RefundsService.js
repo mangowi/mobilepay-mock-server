@@ -96,6 +96,10 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
       return prepareErrorResponse(403, 'code', 'message', 'correlationId');
+    } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_PERIOD_EXPIRED) {
+      return prepareErrorResponse(409, '1353', 'period of refund has expired', 'correlationId');
+    } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_AMOUNT) {
+      return prepareErrorResponse(409, '1350', 'amount mismatch', 'correlationId');
     } else if (payment.status != statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
