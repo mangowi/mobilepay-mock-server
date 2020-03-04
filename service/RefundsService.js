@@ -30,7 +30,7 @@ exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobil
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
       refund.status = statuses.CANCELLEDBYCLIENT;
-      return cancelPaymentInternal();
+      return cancelRefundInternal();
     }
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
