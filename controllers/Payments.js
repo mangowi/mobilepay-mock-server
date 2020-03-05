@@ -3,13 +3,14 @@
 var utils = require('../utils/writer.js');
 var Payments = require('../service/PaymentsService');
 
-module.exports.CancelPayment = function cancelPayment (req, res, next) {
+module.exports.apiV10PaymentsPaymentIdCancelPOST = function cancelPayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
-  Payments.cancelPayment(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
+  Payments.cancelPayment(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -19,30 +20,33 @@ module.exports.CancelPayment = function cancelPayment (req, res, next) {
     });
 };
 
-module.exports.CapturePayment = function capturePayment (req, res, next) {
+module.exports.apiV10PaymentsPaymentIdCapturePOST = function capturePayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
-  var request = req.swagger.params['request'].value;
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
-  Payments.capturePayment(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
+  var body = req.swagger.params['body'].value;
+  Payments.capturePayment(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
     .catch(function (response) {
+      console.error(response);
       utils.writeJson(res, response);
     });
 };
 
-module.exports.InitiateReservationPayment = function initiateReservationPayment (req, res, next) {
-  var request = req.swagger.params['request'].value;
+module.exports.apiV10PaymentsPOST = function initiateReservationPayment (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   var xMobilePayIdempotencyKey = req.swagger.params['X-MobilePay-Idempotency-Key'].value;
-  Payments.initiateReservationPayment(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey)
+  var body = req.swagger.params['body'].value;
+  Payments.initiateReservationPayment(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -52,14 +56,15 @@ module.exports.InitiateReservationPayment = function initiateReservationPayment 
     });
 };
 
-module.exports.PaymentReady = function paymentReady (req, res, next) {
+module.exports.apiV10PaymentsPaymentIdReadyPOST = function paymentReady (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
-  var request = req.swagger.params['request'].value;
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
-  Payments.paymentReady(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
+  var body = req.swagger.params['body'].value;
+  Payments.paymentReady(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -68,14 +73,15 @@ module.exports.PaymentReady = function paymentReady (req, res, next) {
     });
 };
 
-module.exports.PrepareReservationPayment = function prepareReservationPayment (req, res, next) {
-  var request = req.swagger.params['request'].value;
+module.exports.apiV10PaymentsPreparePOST = function prepareReservationPayment (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   var xMobilePayIdempotencyKey = req.swagger.params['X-MobilePay-Idempotency-Key'].value;
-  Payments.prepareReservationPayment(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey)
+  var body = req.swagger.params['body'].value;
+  Payments.prepareReservationPayment(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -84,13 +90,14 @@ module.exports.PrepareReservationPayment = function prepareReservationPayment (r
     });
 };
 
-module.exports.QueryPayment = function queryPayment (req, res, next) {
+module.exports.apiV10PaymentsPaymentIdGET = function queryPayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
-  Payments.queryPayment(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
+  Payments.queryPayment(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -100,15 +107,16 @@ module.exports.QueryPayment = function queryPayment (req, res, next) {
     });
 };
 
-module.exports.QueryPaymentIds = function queryPaymentIds (req, res, next) {
+module.exports.apiV10PaymentsGET = function queryPaymentIds (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   var posId = req.swagger.params['posId'].value;
   var orderId = req.swagger.params['orderId'].value;
   var active = req.swagger.params['active'].value;
-  Payments.queryPaymentIds(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active)
+  Payments.queryPaymentIds(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active)
     .then(function (response) {
       utils.writeJson(res, response);
     })

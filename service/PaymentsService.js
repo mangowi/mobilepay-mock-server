@@ -13,14 +13,15 @@ exports.getPayments = function() {
 /**
  * Cancel a payment. A payment cannot be cancelled once it has been captured.
  *
- * paymentId UUID PaymentId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * paymentId UUID Payment identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * no response value expected for this operation
  **/
-exports.cancelPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
     if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
@@ -43,17 +44,18 @@ let cancelPaymentInternal = function() {
 }
 
 /**
- * Capture a Payment. Only reserved payments can be captured.
+ * Capture a payment. Only reserved payments can be captured.
  *
- * paymentId UUID PaymentId
- * request PaymentCaptureRequest
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * paymentId UUID Payment identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * body PaymentCaptureRequest Capture payment request
  * no response value expected for this operation
  **/
-exports.capturePayment = function(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.capturePayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,body) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
     if (payment.status == statuses.RESERVED) {
@@ -75,34 +77,35 @@ let capturePaymentInternal = function() {
 
 
 /**
- * Initiate a new Payment
+ * Initiate a new payment
  *
- * request InitiateReservationPaymentRequest
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
+ * body InitiatePaymentRequest Initiate payment request
  * returns PaymentInitiatedResponse
  **/
-exports.initiateReservationPayment = function (request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion, xMobilePayIdempotencyKey) {
-  if (request.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
+exports.initiateReservationPayment = function (authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
+  if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
     return prepareErrorResponse(500, 'code', 'message', 'correlationId');
-  } else if (request.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
+  } else if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
     return prepareErrorResponse(409, '1301', 'message', 'correlationId');
   } else {
-    return prepareInitiationResponse(request);
+    return prepareInitiationResponse(body);
   }
 };
 
-function prepareInitiationResponse(request) {
+function prepareInitiationResponse(body) {
   return new Promise(function (resolve) {
     var paymentId = uuid();
     payments.set(
         paymentId,
         {
           id: paymentId,
-          merchantPaymentLabel: request.merchantPaymentLabel,
+          merchantPaymentLabel: body.merchantPaymentLabel,
           status: null
         }
     );
@@ -115,17 +118,18 @@ function prepareInitiationResponse(request) {
 
 
 /**
- * Mark Payment as ready for approval by User
+ * Mark payment as ready for approval by user
  *
- * paymentId UUID paymentId
- * request PaymentReadyRequest
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * paymentId UUID Payment identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * body PaymentReadyRequest Ready payment request
  * no response value expected for this operation
  **/
-exports.paymentReady = function(paymentId,request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.paymentReady = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,body) {
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -133,21 +137,22 @@ exports.paymentReady = function(paymentId,request,authorization,xMobilePayClient
 
 
 /**
- * Prepare a new Payment that is not yet ready for User approval
+ * Prepare a new payment that is not yet ready for user approval
  *
- * request PrepareReservationPaymentRequest
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
+ * body PreparePaymentRequest Prepare payment request
  * returns PaymentInitiatedResponse
  **/
-exports.prepareReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
+exports.prepareReservationPayment = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "paymentId" : "1cbfff94-3d17-4dc1-b667-5280e1ce50f9"
+  "paymentId" : "8df4b807-640b-47ea-8969-c49069420116"
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -159,16 +164,17 @@ exports.prepareReservationPayment = function(request,authorization,xMobilePayCli
 
 
 /**
- * Lookup a Payment
+ * Lookup a payment
  *
- * paymentId UUID PaymentId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * paymentId UUID Payment identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * returns QueryPaymentResponse
  **/
-exports.queryPayment = function(paymentId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
     if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
@@ -234,22 +240,23 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
 
 
 /**
- * Lookup Payments for a given filter
+ * Lookup payments for a given filter
  *
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
- * posId UUID Restricts Payments returned to those with a specific PosId (optional)
- * orderId String Restricts Payments returned to those with a specific orderId (optional)
- * active Boolean Restricts Payments returned to those that are active (optional)
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * posId UUID Restricts payments returned to those with a specific posId (optional)
+ * orderId String Restricts payments returned to those with a specific orderId (optional)
+ * active Boolean Restricts payments returned to those that are active (optional)
  * returns QueryPaymentIdsResponse
  **/
-exports.queryPaymentIds = function(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active) {
+exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "paymentIds" : [ "1cbfff94-3d17-4dc1-b667-5280e1ce50f9" ]
+  "paymentIds" : [ "8df4b807-640b-47ea-8969-c49069420116" ]
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);

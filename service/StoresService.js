@@ -2,21 +2,26 @@
 
 
 /**
- * Lookup a Store
+ * Lookup a store
  *
- * storeId UUID StoreId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * storeId UUID Store identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * returns StoreResponse
  **/
-exports.getStore = function(storeId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.getStore = function(storeId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
   "storeName" : "Store 1",
-  "storeId" : "939f2b0d-152e-4000-8e04-2e30aa9faf7f",
+  "storeId" : "268edad7-ba00-442e-b5c2-0c9b58e80771",
+  "storeStreet" : "Example City",
+  "storeZipCode" : "1234",
+  "storeCity" : "Example City",
+  "brandName" : "The Brand",
   "merchantBrandId" : "POSDK12345",
   "merchantLocationId" : "10001"
 };
@@ -30,21 +35,22 @@ exports.getStore = function(storeId,authorization,xMobilePayClientId,xMobilePayC
 
 
 /**
- * Lookup Stores for a given filter
+ * Lookup stores for a given filter
  *
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
- * merchantBrandId String MerchantBrandId (optional)
- * merchantLocationId String MerchantLocationId (optional)
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * merchantBrandId String Merchant brand identifier (optional)
+ * merchantLocationId String Merchant location identifier (optional)
  * returns StoreIdsResponse
  **/
-exports.getStores = function(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,merchantBrandId,merchantLocationId) {
+exports.getStores = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,merchantBrandId,merchantLocationId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "storeIds" : [ "939f2b0d-152e-4000-8e04-2e30aa9faf7f" ]
+  "storeIds" : [ "268edad7-ba00-442e-b5c2-0c9b58e80771" ]
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -53,4 +59,3 @@ exports.getStores = function(authorization,xMobilePayClientId,xMobilePayClientSy
     }
   });
 }
-

@@ -11,14 +11,15 @@ let refunds = new Map();
 /**
  * Cancel a refund
  *
- * refundId UUID Refund id
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * refundId UUID Refund identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * no response value expected for this operation
  **/
-exports.cancelRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.cancelRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   var payments = Payments.getPayments();
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
@@ -47,14 +48,15 @@ let cancelRefundInternal = function() {
 /**
  * Capture a refund
  *
- * refundId UUID Refund id
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * refundId UUID Refund identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * no response value expected for this operation
  **/
-exports.captureRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.captureRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
     if (refund.status == statuses.RESERVED) {
@@ -76,20 +78,21 @@ let captureRefundInternal = function() {
 
 
 /**
- * Create a refund (a payment can be refunded multiple times, the sum of the refunds cannot exceed the payment full amount)
+ * Create a refund (a payment can be refunded multiple times, the sum of the refunds cannot exceed the full amount of the payment)
  *
- * request CreateRefundRequest
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
+ * body CreateRefundRequest Create refund request
  * returns CreateRefundResponse
  **/
-exports.createRefund = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
+exports.createRefund = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
   var payments = Payments.getPayments();
   var refundId = uuid();
-  var paymentId = request.paymentId;
+  var paymentId = body.paymentId;
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
     if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION) {
@@ -129,16 +132,17 @@ let createRefundInternal = function(refundId) {
 
 
 /**
- * Lookup a Refund
+ * Lookup a refund
  *
- * refundId UUID RefundId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * refundId UUID Refund identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * returns RefundResponse
  **/
-exports.getRefund = function(refundId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.getRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   var payments = Payments.getPayments();
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
@@ -188,20 +192,21 @@ let getRefundInternal = function(refund) {
 
 
 /**
- * Lookup Refunds for a given filter
+ * Lookup refunds for a given filter
  *
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
- * paymentId UUID Restricts Refunds returned to those that belongs to this paymentId (optional)
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * paymentId UUID Restricts refunds returned to those that belongs to this paymentId (optional)
  * returns QueryRefundIdsResponse
  **/
-exports.queryRefundIds = function(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,paymentId) {
+exports.queryRefundIds = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,paymentId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "refundIds" : [ "6aee222f-703c-47f0-92ab-bc1c366b7d52" ]
+  "refundIds" : [ "02372e2a-0db3-4be3-8a0c-dd957dc52955" ]
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);

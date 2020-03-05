@@ -2,21 +2,22 @@
 
 
 /**
- * Create a Point of Sale
+ * Create a point of sale
  *
- * request CreatePosRequest 
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
+ * body CreatePosRequest Create point of sale request
  * returns CreatePosResponse
  **/
-exports.createPos = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
+exports.createPos = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c"
+  "posId" : "4cc3e55a-1dfc-4d0b-8d29-588bee056104"
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -28,13 +29,14 @@ exports.createPos = function(request,authorization,xMobilePayClientId,xMobilePay
 
 
 /**
- * Delete a Point of Sale
+ * Delete a point of sale
  *
- * posId UUID PosId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * posId UUID Point of sale identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * no response value expected for this operation
  **/
 exports.deletePos = function(posId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
@@ -45,16 +47,17 @@ exports.deletePos = function(posId,authorization,xMobilePayClientId,xMobilePayCl
 
 
 /**
- * Lookup the current MobilePay User information checked-in at a Point of Sale
+ * Lookup the current MobilePay user information checked-in at a point of sale
  *
- * posId UUID PosId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * posId UUID Point of sale identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * returns GetCheckInResponse
  **/
-exports.getCheckIn = function(posId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.getCheckIn = function(posId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -72,28 +75,26 @@ exports.getCheckIn = function(posId,authorization,xMobilePayClientId,xMobilePayC
 
 
 /**
- * Lookup a Point of Sale
+ * Lookup a point of sale
  *
- * posId UUID PosId
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
+ * posId UUID Point of sale identifier
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
  * returns PosResponse
  **/
-exports.getPos = function(posId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+exports.getPos = function(posId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "posId" : "bc2a3687-539a-44d2-9e92-0d746dc90089",
+  "posId" : "8c12243c-edee-4ac0-9179-b7e63ccae2dc",
   "merchantPosId" : "My-Pos-1",
-  "storeId" : "939f2b0d-152e-4000-8e04-2e30aa9faf7f",
+  "storeId" : "268edad7-ba00-442e-b5c2-0c9b58e80771",
   "name" : "Register 1",
   "beaconId" : "123456789123456",
-  "callback" : {
-    "destination" : "https://example.com",
-    "type" : "Url"
-  },
+  "callbackAlias" : "Example Alias",
   "supportedBeaconTypes" : [ "QR", "BluetoothMP2" ]
 };
     if (Object.keys(examples).length > 0) {
@@ -106,23 +107,23 @@ exports.getPos = function(posId,authorization,xMobilePayClientId,xMobilePayClien
 
 
 /**
- * Lookup Point of Sales for a given filter
+ * Lookup point of sales for a given filter
  *
- * authorization String Integrator's Bearer Token
- * xMobilePayClientId UUID Integrator's MobilePay Client Id (Must be a valid GUID)
- * xMobilePayClientSystemName String Integrator's Certified System Name
- * xMobilePayClientSystemVersion String Integrator's Certified System Version
- * storeId UUID Restricts Point of Sales returned to those that belong to this Store (optional)
- * beaconId String Restricts Point of Sales returned to the one with this beaconId (optional)
- * merchantPosId String Restricts Point of Sales returned to the one with this merchant PoS identifer (optional)
- * active Boolean Restricts Point of Sales returned to those that are active (i.e., not deleted) (optional)
+ * authorization String Integrator's bearer token
+ * xMobilePayMerchantVATNumber String Merchant VAT identification number
+ * xIBMClientId UUID Integrator's MobilePay client id
+ * xMobilePayClientSystemName String Integrator's certified system name
+ * xMobilePayClientSystemVersion String Integrator's certified system version
+ * storeId UUID Restricts point of sales returned to those that belong to this store (optional)
+ * beaconId String Restricts point of sales returned to the one with this beaconId (optional)
+ * merchantPosId String Restricts point of sales returned to the one with this merchantPoSId (optional)
  * returns PosIdsResponse
  **/
-exports.getPosWithFilter = function(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,storeId,beaconId,merchantPosId,active) {
+exports.getPosWithFilter = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,storeId,beaconId,merchantPosId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "posIds" : [ "c0000a0f-68b8-4759-847b-08d5284c344c" ]
+  "posIds" : [ "4cc3e55a-1dfc-4d0b-8d29-588bee056104" ]
 };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
@@ -131,4 +132,3 @@ exports.getPosWithFilter = function(authorization,xMobilePayClientId,xMobilePayC
     }
   });
 }
-

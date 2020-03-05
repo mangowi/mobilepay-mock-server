@@ -3,13 +3,14 @@
 var utils = require('../utils/writer.js');
 var Stores = require('../service/StoresService');
 
-module.exports.GetStore = function getStore (req, res, next) {
+module.exports.apiV10StoresStoreIdGET = function getStore (req, res, next) {
   var storeId = req.swagger.params['storeId'].value;
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
-  Stores.getStore(storeId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
+  Stores.getStore(storeId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion)
     .then(function (response) {
       utils.writeJson(res, response);
     })
@@ -18,14 +19,15 @@ module.exports.GetStore = function getStore (req, res, next) {
     });
 };
 
-module.exports.GetStores = function getStores (req, res, next) {
+module.exports.apiV10StoresGET = function getStores (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
-  var xMobilePayClientId = req.swagger.params['X-MobilePay-Client-Id'].value;
+  var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
+  var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
   var xMobilePayClientSystemName = req.swagger.params['X-MobilePay-Client-System-Name'].value;
   var xMobilePayClientSystemVersion = req.swagger.params['X-MobilePay-Client-System-Version'].value;
   var merchantBrandId = req.swagger.params['merchantBrandId'].value;
   var merchantLocationId = req.swagger.params['merchantLocationId'].value;
-  Stores.getStores(authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,merchantBrandId,merchantLocationId)
+  Stores.getStores(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,merchantBrandId,merchantLocationId)
     .then(function (response) {
       utils.writeJson(res, response);
     })
