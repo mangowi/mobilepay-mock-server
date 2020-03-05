@@ -95,7 +95,7 @@ exports.createRefund = function(request,authorization,xMobilePayClientId,xMobile
     if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_MERCHANT) {
-      return prepareErrorResponse(403, 'code', 'message', 'correlationId');
+      return prepareErrorResponse(403, '1401', 'Refund created by different integrator', 'correlationId');
     } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_PERIOD_EXPIRED) {
       return prepareErrorResponse(409, '1353', 'period of refund has expired', 'correlationId');
     } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_AMOUNT) {
