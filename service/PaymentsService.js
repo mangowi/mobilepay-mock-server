@@ -85,32 +85,32 @@ let capturePaymentInternal = function() {
  * xMobilePayIdempotencyKey String Used to ensure retried calls are handled correctly
  * returns PaymentInitiatedResponse
  **/
-exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
-  return new Promise(function(resolve, reject) {
-    if (request.merchantPaymentLabel == merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
-      var payload = {
-        'code': 'code',
-        'message': 'message',
-        'correlationId': 'correlationId'
-      };
-      resolve(utils.respondWithCode(500, payload));
-    } else {
-      var paymentId = uuid();
-      payments.set(
+exports.initiateReservationPayment = function (request, authorization, xMobilePayClientId, xMobilePayClientSystemName, xMobilePayClientSystemVersion, xMobilePayIdempotencyKey) {
+  if (request.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
+    return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+  } else if (request.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
+    return prepareErrorResponse(409, '1301', 'message', 'correlationId');
+  } else {
+    return prepareInitiationResponse(request);
+  }
+};
+
+function prepareInitiationResponse(request) {
+  return new Promise(function (resolve) {
+    var paymentId = uuid();
+    payments.set(
         paymentId,
         {
           id: paymentId,
           merchantPaymentLabel: request.merchantPaymentLabel,
           status: null
         }
-      );
-
-      var payload = {
-        "paymentId": paymentId
-      };
-      resolve(payload);
-    }
-  });
+    );
+    var payload = {
+      "paymentId": paymentId
+    };
+    resolve(payload);
+  })
 }
 
 
@@ -222,7 +222,7 @@ let queryPaymentInternal = function(payment) {
 }
 
 let prepareErrorResponse = function(httpCode, code, message, correlationId) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve) {
     var payload = {
       'code': code,
       'message': message,
