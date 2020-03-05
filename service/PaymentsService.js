@@ -88,9 +88,9 @@ let capturePaymentInternal = function() {
 exports.initiateReservationPayment = function(request,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey) {
   return new Promise(function(resolve, reject) {
     if (request.merchantPaymentLabel == merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
-      return prepareErrorResponse(500, 'code', 'message', 'correlationId')
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (request.merchantPaymentLabel == merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
-      return prepareErrorResponse(409, '1301', 'message', 'correlationId')
+      return prepareErrorResponse(409, '1301', 'message', 'correlationId');
     } else {
       var paymentId = uuid();
       payments.set(
