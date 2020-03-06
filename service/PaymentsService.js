@@ -6,10 +6,15 @@ const merchantPaymentLabel = require('../utils/MerchantPaymentLabelCodes');
 const statuses = require('../utils/MobilePayStatuses.js');
 
 let payments = new Map();
+let pointsOfSales = new Map();
+
+exports.getPointsOfSales = function() {
+  return pointsOfSales;
+};
 
 exports.getPayments = function() {
   return payments;
-}
+};
 /**
  * Cancel a payment. A payment cannot be cancelled once it has been captured.
  *
@@ -35,13 +40,13 @@ exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNu
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let cancelPaymentInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 /**
  * Capture a payment. Only reserved payments can be captured.
@@ -67,13 +72,13 @@ exports.capturePayment = function(paymentId,authorization,xMobilePayMerchantVATN
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let capturePaymentInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 
 /**
@@ -98,7 +103,7 @@ exports.initiateReservationPayment = function (authorization,xMobilePayMerchantV
   }
 };
 
-function prepareInitiationResponse(body) {
+let prepareInitiationResponse = function(body) {
   return new Promise(function (resolve) {
     var paymentId = uuid();
     payments.set(
@@ -109,12 +114,13 @@ function prepareInitiationResponse(body) {
           status: null
         }
     );
+    pointsOfSales.set(body.posId, paymentId);
     var payload = {
       "paymentId": paymentId
     };
     resolve(payload);
-  })
-}
+  });
+};
 
 
 /**
@@ -133,7 +139,7 @@ exports.paymentReady = function(paymentId,authorization,xMobilePayMerchantVATNum
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 
 /**
@@ -160,7 +166,7 @@ exports.prepareReservationPayment = function(authorization,xMobilePayMerchantVAT
       resolve();
     }
   });
-}
+};
 
 
 /**
@@ -200,7 +206,7 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNum
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let queryPaymentInternal = function(payment) {
   return new Promise(function(resolve, reject) {
@@ -225,7 +231,7 @@ let queryPaymentInternal = function(payment) {
     };
     resolve(payload);
   });
-}
+};
 
 let prepareErrorResponse = function(httpCode, code, message, correlationId) {
   return new Promise(function (resolve) {
@@ -236,7 +242,7 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
     };
     resolve(utils.respondWithCode(httpCode, payload));
   });
-}
+};
 
 
 /**
@@ -264,4 +270,4 @@ exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIB
       resolve();
     }
   });
-}
+};

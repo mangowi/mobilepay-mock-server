@@ -24,8 +24,8 @@ exports.cancelRefund = function(refundId,authorization,xMobilePayMerchantVATNumb
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
     var payment = payments.get(refund.paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION
-        || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_REFUND_EXCEPTION ||
+        payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (refund.status == statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
@@ -36,13 +36,13 @@ exports.cancelRefund = function(refundId,authorization,xMobilePayMerchantVATNumb
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let cancelRefundInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 
 /**
@@ -68,13 +68,13 @@ exports.captureRefund = function(refundId,authorization,xMobilePayMerchantVATNum
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let captureRefundInternal = function() {
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 
 /**
@@ -119,7 +119,7 @@ exports.createRefund = function(authorization,xMobilePayMerchantVATNumber,xIBMCl
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let createRefundInternal = function(refundId) {
   return new Promise(function(resolve, reject) {
@@ -128,7 +128,7 @@ let createRefundInternal = function(refundId) {
     };
     resolve(payload);
   });
-}
+};
 
 
 /**
@@ -147,8 +147,8 @@ exports.getRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
     var payment = payments.get(refund.paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION
-        || payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_REFUND_EXCEPTION ||
+        payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_CANCEL_REFUND_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (refund.status == null) {
       refund.status = statuses.INITIATED;
@@ -162,7 +162,7 @@ exports.getRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
   }
-}
+};
 
 let prepareErrorResponse = function(httpCode, code, message, correlationId) {
   return new Promise(function(resolve, reject) {
@@ -173,7 +173,7 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
     };
     resolve(utils.respondWithCode(httpCode, payload));
   });
-}
+};
 
 let getRefundInternal = function(refund) {
   return new Promise(function(resolve, reject) {
@@ -188,7 +188,7 @@ let getRefundInternal = function(refund) {
     };
     resolve(payload);
   });
-}
+};
 
 
 /**
@@ -206,12 +206,12 @@ exports.queryRefundIds = function(authorization,xMobilePayMerchantVATNumber,xIBM
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "refundIds" : [ "02372e2a-0db3-4be3-8a0c-dd957dc52955" ]
-};
+      "refundIds" : [ "02372e2a-0db3-4be3-8a0c-dd957dc52955" ]
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
       resolve();
     }
   });
-}
+};

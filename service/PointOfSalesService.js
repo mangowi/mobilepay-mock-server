@@ -25,7 +25,7 @@ exports.createPos = function(authorization,xMobilePayMerchantVATNumber,xIBMClien
       resolve();
     }
   });
-}
+};
 
 
 /**
@@ -43,7 +43,7 @@ exports.deletePos = function(posId,authorization,xMobilePayClientId,xMobilePayCl
   return new Promise(function(resolve, reject) {
     resolve();
   });
-}
+};
 
 
 /**
@@ -71,7 +71,7 @@ exports.getCheckIn = function(posId,authorization,xMobilePayMerchantVATNumber,xI
       resolve();
     }
   });
-}
+};
 
 
 /**
@@ -103,7 +103,7 @@ exports.getPos = function(posId,authorization,xMobilePayMerchantVATNumber,xIBMCl
       resolve();
     }
   });
-}
+};
 
 
 /**
@@ -131,4 +131,4 @@ exports.getPosWithFilter = function(authorization,xMobilePayMerchantVATNumber,xI
       resolve();
     }
   });
-}
+};

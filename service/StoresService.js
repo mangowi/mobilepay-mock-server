@@ -16,22 +16,22 @@ exports.getStore = function(storeId,authorization,xMobilePayMerchantVATNumber,xI
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "storeName" : "Store 1",
-  "storeId" : "268edad7-ba00-442e-b5c2-0c9b58e80771",
-  "storeStreet" : "Example City",
-  "storeZipCode" : "1234",
-  "storeCity" : "Example City",
-  "brandName" : "The Brand",
-  "merchantBrandId" : "POSDK12345",
-  "merchantLocationId" : "10001"
-};
+      "storeName" : "Store 1",
+      "storeId" : "268edad7-ba00-442e-b5c2-0c9b58e80771",
+      "storeStreet" : "Example City",
+      "storeZipCode" : "1234",
+      "storeCity" : "Example City",
+      "brandName" : "The Brand",
+      "merchantBrandId" : "POSDK12345",
+      "merchantLocationId" : "10001"
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
       resolve();
     }
   });
-}
+};
 
 
 /**
@@ -50,12 +50,12 @@ exports.getStores = function(authorization,xMobilePayMerchantVATNumber,xIBMClien
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "storeIds" : [ "268edad7-ba00-442e-b5c2-0c9b58e80771" ]
-};
+      "storeIds" : [ "268edad7-ba00-442e-b5c2-0c9b58e80771" ]
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
       resolve();
     }
   });
-}
+};
