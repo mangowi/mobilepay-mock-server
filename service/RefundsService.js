@@ -59,7 +59,9 @@ let cancelRefundInternal = function() {
 exports.captureRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (refunds.has(refundId)) {
     var refund = refunds.get(refundId);
-    if (refund.status == statuses.RESERVED) {
+    if (refund.merchantPaymentLabel == merchantPaymentLabel.CAPTURE_REFUND_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (refund.status == statuses.RESERVED) {
       refund.status = statuses.CAPTURED;
       return captureRefundInternal();
     } else {
@@ -111,6 +113,9 @@ exports.createRefund = function(authorization,xMobilePayMerchantVATNumber,xIBMCl
         {
           id: refundId,
           paymentId: paymentId,
+          refundOrderId: body.refundOrderId,
+          amount: body.amount,
+          currencyCode: body.currencyCode,
           status: null
         }
       );
@@ -152,12 +157,12 @@ exports.getRefund = function(refundId,authorization,xMobilePayMerchantVATNumber,
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (refund.status == null) {
       refund.status = statuses.INITIATED;
-      return getRefundInternal(refund);
+      return getRefundInternal(refund, payment);
     } else if (refund.status == statuses.INITIATED) {
       refund.status = statuses.RESERVED;
-      return getRefundInternal(refund);
+      return getRefundInternal(refund, payment);
     } else {
-      return getRefundInternal(refund);
+      return getRefundInternal(refund, payment);
     }
   } else {
     return prepareErrorResponse(404, 'code', 'message', 'correlationId');
@@ -175,7 +180,7 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
   });
 };
 
-let getRefundInternal = function(refund) {
+let getRefundInternal = function(refund, payment) {
   return new Promise(function(resolve, reject) {
     var payload = {
       "refundId" : refund.id,
@@ -187,6 +192,9 @@ let getRefundInternal = function(refund) {
       "pollDelayInMs" : 100
     };
     resolve(payload);
+    if (refund.status == statuses.RESERVED && payment.merchantPaymentLabel == merchantPaymentLabel.REFUND_EXPIRED_AND_CANCELLED_STATUS) {
+      refund.status = statuses.EXPIREDANDCANCELLED;
+    }
   });
 };
 

@@ -63,7 +63,9 @@ let cancelPaymentInternal = function() {
 exports.capturePayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,body) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
-    if (payment.status == statuses.RESERVED) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CAPTURE_PAYMENT_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.status == statuses.RESERVED) {
       payment.status = statuses.CAPTURED;
       return capturePaymentInternal();
     } else {
@@ -110,6 +112,10 @@ let prepareInitiationResponse = function(body) {
         paymentId,
         {
           id: paymentId,
+          posId: body.posId,
+          orderId: body.orderId,
+          amount: body.amount,
+          currencyCode: body.currencyCode,
           merchantPaymentLabel: body.merchantPaymentLabel,
           status: null
         }
@@ -158,8 +164,8 @@ exports.prepareReservationPayment = function(authorization,xMobilePayMerchantVAT
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "paymentId" : "8df4b807-640b-47ea-8969-c49069420116"
-};
+      "paymentId" : "8df4b807-640b-47ea-8969-c49069420116"
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
@@ -230,6 +236,9 @@ let queryPaymentInternal = function(payment) {
       "pollDelayInMs" : 100
     };
     resolve(payload);
+    if (payment.status == statuses.RESERVED && payment.merchantPaymentLabel == merchantPaymentLabel.PAYMENT_EXPIRED_AND_CANCELLED_STATUS) {
+      payment.status = statuses.EXPIREDANDCANCELLED;
+    }
   });
 };
 
@@ -262,8 +271,8 @@ exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIB
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
-  "paymentIds" : [ "8df4b807-640b-47ea-8969-c49069420116" ]
-};
+      "paymentIds" : [ "8df4b807-640b-47ea-8969-c49069420116" ]
+    };
     if (Object.keys(examples).length > 0) {
       resolve(examples[Object.keys(examples)[0]]);
     } else {
