@@ -34,7 +34,6 @@ exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNu
     } else if (payment.status == statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
-      pointsOfSales.delete(payment.posId);
       payment.status = statuses.CANCELLEDBYCLIENT;
       return cancelPaymentInternal();
     }
@@ -99,7 +98,7 @@ let capturePaymentInternal = function() {
 exports.initiateReservationPayment = function (authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
   if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
     return prepareErrorResponse(500, 'code', 'message', 'correlationId');
-  } else if (pointsOfSales.has(body.posId)) {
+  } else if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
     return prepareErrorResponse(409, '1301', 'message', 'correlationId');
   } else {
     return prepareInitiationResponse(body);
@@ -121,7 +120,9 @@ let prepareInitiationResponse = function(body) {
           status: null
         }
     );
-    pointsOfSales.set(body.posId, paymentId);
+    if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_WITH_POS_RELATION) {
+        pointsOfSales.set(body.posId, paymentId);
+    }
     var payload = {
       "paymentId": paymentId
     };
@@ -197,18 +198,15 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNum
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.INITIATED && payment.merchantPaymentLabel == merchantPaymentLabel.PAYMENT_CANCELLED_BY_MOBILEPAY_STATUS) {
       payment.status = statuses.CANCELLEDBYMOBILEPAY;
-      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.INITIATED) {
       payment.status = statuses.ISSUEDTOUSER;
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.ISSUEDTOUSER && payment.merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
       payment.status = statuses.CANCELLEDBYUSER;
-      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.ISSUEDTOUSER) {
       payment.status = statuses.RESERVED;
-      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else {
       return queryPaymentInternal(payment);
