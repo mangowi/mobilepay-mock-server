@@ -34,6 +34,7 @@ exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNu
     } else if (payment.status == statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
+      pointsOfSales.delete(payment.posId);
       payment.status = statuses.CANCELLEDBYCLIENT;
       return cancelPaymentInternal();
     }
@@ -98,7 +99,7 @@ let capturePaymentInternal = function() {
 exports.initiateReservationPayment = function (authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
   if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION) {
     return prepareErrorResponse(500, 'code', 'message', 'correlationId');
-  } else if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_EXCEPTION_ALREADY_INITIATED) {
+  } else if (pointsOfSales.has(body.posId)) {
     return prepareErrorResponse(409, '1301', 'message', 'correlationId');
   } else {
     return prepareInitiationResponse(body);
@@ -196,15 +197,18 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNum
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.INITIATED && payment.merchantPaymentLabel == merchantPaymentLabel.PAYMENT_CANCELLED_BY_MOBILEPAY_STATUS) {
       payment.status = statuses.CANCELLEDBYMOBILEPAY;
+      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.INITIATED) {
       payment.status = statuses.ISSUEDTOUSER;
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.ISSUEDTOUSER && payment.merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_USER_STATUS) {
       payment.status = statuses.CANCELLEDBYUSER;
+      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.ISSUEDTOUSER) {
       payment.status = statuses.RESERVED;
+      pointsOfSales.delete(payment.posId);
       return queryPaymentInternal(payment);
     } else {
       return queryPaymentInternal(payment);
@@ -268,15 +272,20 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
  * returns QueryPaymentIdsResponse
  **/
 exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-      "paymentIds" : [ "8df4b807-640b-47ea-8969-c49069420116" ]
-    };
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+  if (pointsOfSales.has(posId)) {
+    let paymentId = pointsOfSales.get(posId);
+    return new Promise(function(resolve, reject) {
+      let response = {
+        "paymentIds" : [ paymentId ]
+      };
+      resolve(response);
+    });
+  } else {
+    return new Promise(function(resolve, reject) {
+      let response = {
+        "paymentIds" : [ ]
+      };
+      resolve(response);
+    });
+  }
 };
