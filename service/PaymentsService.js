@@ -194,7 +194,7 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNum
     } else if (payment.status == null) {
       payment.status = statuses.INITIATED;
       return queryPaymentInternal(payment);
-    } else if (payment.status == statuses.INITIATED && payment.merchantPaymentLabel == merchantPaymentLabel.CANCELLED_BY_MOBILEPAY_STATUS) {
+    } else if (payment.status == statuses.INITIATED && payment.merchantPaymentLabel == merchantPaymentLabel.PAYMENT_CANCELLED_BY_MOBILEPAY_STATUS) {
       payment.status = statuses.CANCELLEDBYMOBILEPAY;
       return queryPaymentInternal(payment);
     } else if (payment.status == statuses.INITIATED) {
