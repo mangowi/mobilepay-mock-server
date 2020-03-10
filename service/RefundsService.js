@@ -105,6 +105,8 @@ exports.createRefund = function(authorization,xMobilePayMerchantVATNumber,xIBMCl
       return prepareErrorResponse(409, '1353', 'period of refund has expired', 'correlationId');
     } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_MISMATCH_AMOUNT) {
       return prepareErrorResponse(400, '1102', 'amount mismatch', 'correlationId');
+    } else if (payment.merchantPaymentLabel == merchantPaymentLabel.CREATE_REFUND_EXCEPTION_RESERVED_TRANSACTION) {
+      return prepareErrorResponse(409, '1354', 'transaction is in reserved status', 'correlationId');
     } else if (payment.status != statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else {
