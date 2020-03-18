@@ -29,7 +29,8 @@ exports.getPayments = function() {
 exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION ||
+        payment.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.status == statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
@@ -120,7 +121,9 @@ let prepareInitiationResponse = function(body) {
           status: null
         }
     );
-    if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_WITH_POS_RELATION) {
+    if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_WITH_POS_RELATION ||
+          body.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION ||
+          body.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
         pointsOfSales.set(body.posId, paymentId);
     }
     var payload = {
@@ -191,7 +194,8 @@ exports.prepareReservationPayment = function(authorization,xMobilePayMerchantVAT
 exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION ||
+        payment.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.status == null) {
       payment.status = statuses.INITIATED;
