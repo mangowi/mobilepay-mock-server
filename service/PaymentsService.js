@@ -123,6 +123,7 @@ let prepareInitiationResponse = function(body) {
     );
     if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_WITH_POS_RELATION ||
           body.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION ||
+          body.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_PAYMENTS_EXCEPTION ||
           body.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
         pointsOfSales.set(body.posId, paymentId);
     }
@@ -276,6 +277,10 @@ let prepareErrorResponse = function(httpCode, code, message, correlationId) {
 exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,posId,orderId,active) {
   if (pointsOfSales.has(posId)) {
     let paymentId = pointsOfSales.get(posId);
+    var payment = payments.get(paymentId);
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENTS_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    }
     return new Promise(function(resolve, reject) {
       let response = {
         "paymentIds" : [ paymentId ]
