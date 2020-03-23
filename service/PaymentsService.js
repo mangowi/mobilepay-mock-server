@@ -29,8 +29,10 @@ exports.getPayments = function() {
 exports.cancelPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION ||
-        payment.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.CANCEL_PAYMENT_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
+      payment.merchantPaymentLabel = null;
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.status == statuses.CAPTURED) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
@@ -123,7 +125,7 @@ let prepareInitiationResponse = function(body) {
     );
     if (body.merchantPaymentLabel === merchantPaymentLabel.INITIATE_PAYMENT_WITH_POS_RELATION ||
           body.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION ||
-          body.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_PAYMENTS_EXCEPTION ||
+          body.merchantPaymentLabel === merchantPaymentLabel.QUERY_PAYMENT_IDS_EXCEPTION ||
           body.merchantPaymentLabel === merchantPaymentLabel.CANCEL_ACTIVE_PAYMENT_EXCEPTION) {
         pointsOfSales.set(body.posId, paymentId);
     }
@@ -195,8 +197,10 @@ exports.prepareReservationPayment = function(authorization,xMobilePayMerchantVAT
 exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
   if (payments.has(paymentId)) {
     var payment = payments.get(paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION ||
-        payment.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
+      return prepareErrorResponse(500, 'code', 'message', 'correlationId');
+    } else if (payment.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION) {
+      payment.merchantPaymentLabel = null;
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.status == null) {
       payment.status = statuses.INITIATED;
@@ -278,7 +282,7 @@ exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIB
   if (pointsOfSales.has(posId)) {
     let paymentId = pointsOfSales.get(posId);
     var payment = payments.get(paymentId);
-    if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENTS_EXCEPTION) {
+    if (payment.merchantPaymentLabel == merchantPaymentLabel.QUERY_PAYMENT_IDS_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     }
     return new Promise(function(resolve, reject) {
