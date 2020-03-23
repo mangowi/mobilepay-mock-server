@@ -228,10 +228,10 @@ let queryPaymentInternal = function(payment) {
   return new Promise(function(resolve, reject) {
     var payload = {
       "paymentId" : payment.id,
-      "posId" : "c0000a0f-68b8-4759-847b-08d5284c344c",
-      "orderId" : "ORDER-12345",
-      "amount" : 12.5,
-      "currencyCode" : "DKK",
+      "posId" : payment.posId,
+      "orderId" : payment.orderId,
+      "amount" : payment.amount,
+      "currencyCode" : payment.currencyCode,
       "restrictions" : {
         "debitCardDisallowed" : false,
         "creditCardDisallowed" : false,
