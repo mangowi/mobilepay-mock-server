@@ -187,9 +187,9 @@ let getRefundInternal = function(refund, payment) {
     var payload = {
       "refundId" : refund.id,
       "paymentId" : refund.paymentId,
-      "refundOrderId" : "REFUND-12345",
-      "amount" : 12.5,
-      "currencyCode" : "DKK",
+      "refundOrderId" : refund.refundOrderId,
+      "amount" : refund.amount,
+      "currencyCode" : refund.currencyCode,
       "status" : refund.status,
       "pollDelayInMs" : 100
     };
