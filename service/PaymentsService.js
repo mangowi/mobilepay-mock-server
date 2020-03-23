@@ -200,7 +200,6 @@ exports.queryPayment = function(paymentId,authorization,xMobilePayMerchantVATNum
     if (payment.merchantPaymentLabel == merchantPaymentLabel.LOOKUP_PAYMENT_EXCEPTION) {
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.merchantPaymentLabel === merchantPaymentLabel.LOOKUP_ACTIVE_PAYMENT_EXCEPTION) {
-      payment.merchantPaymentLabel = null;
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     } else if (payment.status == null) {
       payment.status = statuses.INITIATED;
@@ -283,6 +282,7 @@ exports.queryPaymentIds = function(authorization,xMobilePayMerchantVATNumber,xIB
     let paymentId = pointsOfSales.get(posId);
     var payment = payments.get(paymentId);
     if (payment.merchantPaymentLabel == merchantPaymentLabel.QUERY_PAYMENT_IDS_EXCEPTION) {
+      payment.merchantPaymentLabel = null;
       return prepareErrorResponse(500, 'code', 'message', 'correlationId');
     }
     return new Promise(function(resolve, reject) {
