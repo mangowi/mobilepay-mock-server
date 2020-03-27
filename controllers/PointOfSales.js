@@ -3,7 +3,7 @@
 var utils = require('../utils/writer.js');
 var PointOfSales = require('../service/PointOfSalesService');
 
-module.exports.apiV10PointofsalesPOST = function createPos (req, res, next) {
+module.exports.v10PointofsalesPOST = function createPos (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
@@ -20,7 +20,7 @@ module.exports.apiV10PointofsalesPOST = function createPos (req, res, next) {
     });
 };
 
-module.exports.apiV10PointofsalesPosIdDELETE = function deletePos (req, res, next) {
+module.exports.v10PointofsalesPosIdDELETE = function deletePos (req, res, next) {
   var posId = req.swagger.params['posId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -36,7 +36,7 @@ module.exports.apiV10PointofsalesPosIdDELETE = function deletePos (req, res, nex
     });
 };
 
-module.exports.apiV10PointofsalesPosIdCheckinGET = function getCheckIn (req, res, next) {
+module.exports.v10PointofsalesPosIdCheckinGET = function getCheckIn (req, res, next) {
   var posId = req.swagger.params['posId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -52,7 +52,7 @@ module.exports.apiV10PointofsalesPosIdCheckinGET = function getCheckIn (req, res
     });
 };
 
-module.exports.apiV10PointofsalesPosIdGET = function getPos (req, res, next) {
+module.exports.v10PointofsalesPosIdGET = function getPos (req, res, next) {
   var posId = req.swagger.params['posId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -68,7 +68,7 @@ module.exports.apiV10PointofsalesPosIdGET = function getPos (req, res, next) {
     });
 };
 
-module.exports.apiV10PointofsalesGET = function getPosWithFilter (req, res, next) {
+module.exports.v10PointofsalesGET = function getPosWithFilter (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;

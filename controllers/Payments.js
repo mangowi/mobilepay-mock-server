@@ -3,7 +3,7 @@
 var utils = require('../utils/writer.js');
 var Payments = require('../service/PaymentsService');
 
-module.exports.apiV10PaymentsPaymentIdCancelPOST = function cancelPayment (req, res, next) {
+module.exports.v10PaymentsPaymentIdCancelPOST = function cancelPayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -20,7 +20,7 @@ module.exports.apiV10PaymentsPaymentIdCancelPOST = function cancelPayment (req, 
     });
 };
 
-module.exports.apiV10PaymentsPaymentIdCapturePOST = function capturePayment (req, res, next) {
+module.exports.v10PaymentsPaymentIdCapturePOST = function capturePayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -38,7 +38,7 @@ module.exports.apiV10PaymentsPaymentIdCapturePOST = function capturePayment (req
     });
 };
 
-module.exports.apiV10PaymentsPOST = function initiateReservationPayment (req, res, next) {
+module.exports.v10PaymentsPOST = function initiateReservationPayment (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;

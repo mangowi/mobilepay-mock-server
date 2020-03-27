@@ -3,7 +3,7 @@
 var utils = require('../utils/writer.js');
 var Refunds = require('../service/RefundsService');
 
-module.exports.apiV10RefundsRefundIdCancelPOST = function cancelRefund (req, res, next) {
+module.exports.v10RefundsRefundIdCancelPOST = function cancelRefund (req, res, next) {
   var refundId = req.swagger.params['refundId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -20,7 +20,7 @@ module.exports.apiV10RefundsRefundIdCancelPOST = function cancelRefund (req, res
     });
 };
 
-module.exports.apiV10RefundsRefundIdCapturePOST = function captureRefund (req, res, next) {
+module.exports.v10RefundsRefundIdCapturePOST = function captureRefund (req, res, next) {
   var refundId = req.swagger.params['refundId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -37,7 +37,7 @@ module.exports.apiV10RefundsRefundIdCapturePOST = function captureRefund (req, r
     });
 };
 
-module.exports.apiV10RefundsPOST = function createRefund (req, res, next) {
+module.exports.v10RefundsPOST = function createRefund (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
@@ -55,7 +55,7 @@ module.exports.apiV10RefundsPOST = function createRefund (req, res, next) {
     });
 };
 
-module.exports.apiV10RefundsRefundIdGET = function getRefund (req, res, next) {
+module.exports.v10RefundsRefundIdGET = function getRefund (req, res, next) {
   var refundId = req.swagger.params['refundId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -72,7 +72,7 @@ module.exports.apiV10RefundsRefundIdGET = function getRefund (req, res, next) {
     });
 };
 
-module.exports.apiV10RefundsGET = function queryRefundIds (req, res, next) {
+module.exports.v10RefundsGET = function queryRefundIds (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;

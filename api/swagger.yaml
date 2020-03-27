@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "<span style=\"color:red\">**Notice!** The URL in `Example Request`\
-    \ is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/api/v10/...`</span>\n\
+    \ is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/v10/...`</span>\n\
     ## PoS  V10 API\n\nThe API is split into 5 categories: \n* **Brands**: Look up\
     \ brands or stores based on brand \n* **PointOfSales**: Management of Point of\
     \ Sales including create, delete and querying. Note that a Point of Sale is not\
@@ -19,12 +19,12 @@ info:
     \ (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)\
     \ \n* Prepare payment (POST /payments/prepare) --> mark as ready (POST /payments/{paymentId}/ready)\
     \ --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)"
-  version: "1.0.31"
-  title: "PoS V10 Integrator API"
+  version: "10.0.34"
+  title: "PoS Integrator API"
   contact:
     name: "MobilePay Business Integration"
     email: "developer@mobilepay.dk"
-  x-ibm-name: "pos-v10-integrator-api"
+  x-ibm-name: "pos-integrator-api"
 basePath: "/pos"
 schemes:
 - "https"
@@ -35,12 +35,12 @@ produces:
 security:
 - api-key-1: []
 paths:
-  /api/v10/payments/{paymentId}:
+  /v10/payments/{paymentId}:
     get:
       tags:
       - "Payments"
       summary: "Lookup a payment"
-      operationId: "apiV10PaymentsPaymentIdGET"
+      operationId: "v10PaymentsPaymentIdGET"
       produces:
       - "application/json"
       parameters:
@@ -136,12 +136,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/payments:
+  /v10/payments:
     get:
       tags:
       - "Payments"
       summary: "Lookup payments for a given filter"
-      operationId: "apiV10PaymentsGET"
+      operationId: "v10PaymentsGET"
       produces:
       - "application/json"
       parameters:
@@ -225,7 +225,7 @@ paths:
       tags:
       - "Payments"
       summary: "Initiate a new payment"
-      operationId: "apiV10PaymentsPOST"
+      operationId: "v10PaymentsPOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -324,12 +324,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/payments/prepare:
+  /v10/payments/prepare:
     post:
       tags:
       - "Payments"
       summary: "Prepare a new payment that is not yet ready for user approval"
-      operationId: "apiV10PaymentsPreparePOST"
+      operationId: "v10PaymentsPreparePOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -428,12 +428,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/payments/{paymentId}/ready:
+  /v10/payments/{paymentId}/ready:
     post:
       tags:
       - "Payments"
       summary: "Mark payment as ready for approval by user"
-      operationId: "apiV10PaymentsPaymentIdReadyPOST"
+      operationId: "v10PaymentsPaymentIdReadyPOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -530,12 +530,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/payments/{paymentId}/capture:
+  /v10/payments/{paymentId}/capture:
     post:
       tags:
       - "Payments"
       summary: "Capture a payment. Only reserved payments can be captured."
-      operationId: "apiV10PaymentsPaymentIdCapturePOST"
+      operationId: "v10PaymentsPaymentIdCapturePOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -631,12 +631,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/payments/{paymentId}/cancel:
+  /v10/payments/{paymentId}/cancel:
     post:
       tags:
       - "Payments"
       summary: "Cancel a payment. A payment cannot be cancelled once it has been captured."
-      operationId: "apiV10PaymentsPaymentIdCancelPOST"
+      operationId: "v10PaymentsPaymentIdCancelPOST"
       produces:
       - "application/json"
       parameters:
@@ -721,12 +721,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Payments"
-  /api/v10/pointofsales/{posId}:
+  /v10/pointofsales/{posId}:
     get:
       tags:
       - "PointOfSales"
       summary: "Lookup a point of sale"
-      operationId: "apiV10PointofsalesPosIdGET"
+      operationId: "v10PointofsalesPosIdGET"
       produces:
       - "application/json"
       parameters:
@@ -818,7 +818,7 @@ paths:
       tags:
       - "PointOfSales"
       summary: "Delete a point of sale"
-      operationId: "apiV10PointofsalesPosIdDELETE"
+      operationId: "v10PointofsalesPosIdDELETE"
       produces:
       - "application/json"
       parameters:
@@ -893,12 +893,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "PointOfSales"
-  /api/v10/pointofsales:
+  /v10/pointofsales:
     get:
       tags:
       - "PointOfSales"
       summary: "Lookup point of sales for a given filter"
-      operationId: "apiV10PointofsalesGET"
+      operationId: "v10PointofsalesGET"
       produces:
       - "application/json"
       parameters:
@@ -982,7 +982,7 @@ paths:
       tags:
       - "PointOfSales"
       summary: "Create a point of sale"
-      operationId: "apiV10PointofsalesPOST"
+      operationId: "v10PointofsalesPOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -1071,13 +1071,13 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "PointOfSales"
-  /api/v10/pointofsales/{posId}/checkin:
+  /v10/pointofsales/{posId}/checkin:
     get:
       tags:
       - "PointOfSales"
       summary: "Lookup the current MobilePay user information checked-in at a point\
         \ of sale"
-      operationId: "apiV10PointofsalesPosIdCheckinGET"
+      operationId: "v10PointofsalesPosIdCheckinGET"
       produces:
       - "application/json"
       parameters:
@@ -1161,12 +1161,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "PointOfSales"
-  /api/v10/refunds/{refundId}:
+  /v10/refunds/{refundId}:
     get:
       tags:
       - "Refunds"
       summary: "Lookup a refund"
-      operationId: "apiV10RefundsRefundIdGET"
+      operationId: "v10RefundsRefundIdGET"
       produces:
       - "application/json"
       parameters:
@@ -1252,12 +1252,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Refunds"
-  /api/v10/refunds:
+  /v10/refunds:
     get:
       tags:
       - "Refunds"
       summary: "Lookup refunds for a given filter"
-      operationId: "apiV10RefundsGET"
+      operationId: "v10RefundsGET"
       produces:
       - "application/json"
       parameters:
@@ -1331,7 +1331,7 @@ paths:
       - "Refunds"
       summary: "Create a refund (a payment can be refunded multiple times, the sum\
         \ of the refunds cannot exceed the full amount of the payment)"
-      operationId: "apiV10RefundsPOST"
+      operationId: "v10RefundsPOST"
       consumes:
       - "application/json-patch+json"
       - "application/json"
@@ -1429,12 +1429,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Refunds"
-  /api/v10/refunds/{refundId}/capture:
+  /v10/refunds/{refundId}/capture:
     post:
       tags:
       - "Refunds"
       summary: "Capture a refund"
-      operationId: "apiV10RefundsRefundIdCapturePOST"
+      operationId: "v10RefundsRefundIdCapturePOST"
       produces:
       - "application/json"
       parameters:
@@ -1519,12 +1519,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Refunds"
-  /api/v10/refunds/{refundId}/cancel:
+  /v10/refunds/{refundId}/cancel:
     post:
       tags:
       - "Refunds"
       summary: "Cancel a refund"
-      operationId: "apiV10RefundsRefundIdCancelPOST"
+      operationId: "v10RefundsRefundIdCancelPOST"
       produces:
       - "application/json"
       parameters:
@@ -1609,12 +1609,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Refunds"
-  /api/v10/stores/{storeId}:
+  /v10/stores/{storeId}:
     get:
       tags:
       - "Stores"
       summary: "Lookup a store"
-      operationId: "apiV10StoresStoreIdGET"
+      operationId: "v10StoresStoreIdGET"
       produces:
       - "application/json"
       parameters:
@@ -1691,12 +1691,12 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
       x-swagger-router-controller: "Stores"
-  /api/v10/stores:
+  /v10/stores:
     get:
       tags:
       - "Stores"
       summary: "Lookup stores for a given filter"
-      operationId: "apiV10StoresGET"
+      operationId: "v10StoresGET"
       produces:
       - "application/json"
       parameters:
@@ -1822,6 +1822,7 @@ definitions:
     - "CancelledByMobilePay"
     - "ExpiredAndCancelled"
     - "Captured"
+    - "RejectedByMobilePayDueToAgeRestrictions"
   QueryPaymentResponse:
     type: "object"
     required:
@@ -1876,6 +1877,7 @@ definitions:
         - "CancelledByMobilePay"
         - "ExpiredAndCancelled"
         - "Captured"
+        - "RejectedByMobilePayDueToAgeRestrictions"
         allOf:
         - $ref: "#/definitions/PaymentStateExt"
       customerToken:
@@ -2266,7 +2268,7 @@ definitions:
           format: "uuid"
 x-ibm-configuration:
   enforced: true
-  testable: false
+  testable: true
   phase: "realized"
 x-ibm-endpoints:
 - endpointUrl: "https://api.sandbox.mobilepay.dk"

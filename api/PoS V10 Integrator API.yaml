@@ -1,10 +1,10 @@
 ---
 swagger: "2.0"
 info:
-  version: 1.0.31
-  title: PoS V10 Integrator API
+  version: 10.0.34
+  title: PoS Integrator API
   description: "<span style=\"color:red\">**Notice!** The URL in `Example Request`
-    is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/api/v10/...`</span>\n##
+    is currently wrong. The URL to use is: `https://api.sandbox.mobilepay.dk/pos/v10/...`</span>\n##
     PoS  V10 API\n\nThe API is split into 5 categories: \n* **Brands**: Look up brands
     or stores based on brand \n* **PointOfSales**: Management of Point of Sales including
     create, delete and querying. Note that a Point of Sale is not editable. \n* **Refunds**:
@@ -20,12 +20,12 @@ info:
     --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)
     \n* Prepare payment (POST /payments/prepare) --> mark as ready (POST /payments/{paymentId}/ready)
     --> poll until reserved (GET /payments/{paymentId}) --> capture (POST /payments/{paymentId}/capture)"
-  x-ibm-name: pos-v10-integrator-api
+  x-ibm-name: pos-integrator-api
   contact:
     name: MobilePay Business Integration
     email: developer@mobilepay.dk
 paths:
-  /api/v10/payments/{paymentId}:
+  /v10/payments/{paymentId}:
     get:
       tags:
       - Payments
@@ -124,7 +124,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/payments:
+  /v10/payments:
     get:
       tags:
       - Payments
@@ -305,7 +305,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/payments/prepare:
+  /v10/payments/prepare:
     post:
       tags:
       - Payments
@@ -407,7 +407,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/payments/{paymentId}/ready:
+  /v10/payments/{paymentId}/ready:
     post:
       tags:
       - Payments
@@ -506,7 +506,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/payments/{paymentId}/capture:
+  /v10/payments/{paymentId}/capture:
     post:
       tags:
       - Payments
@@ -605,7 +605,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/payments/{paymentId}/cancel:
+  /v10/payments/{paymentId}/cancel:
     post:
       tags:
       - Payments
@@ -693,7 +693,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/pointofsales/{posId}:
+  /v10/pointofsales/{posId}:
     get:
       tags:
       - PointOfSales
@@ -861,7 +861,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/pointofsales:
+  /v10/pointofsales:
     get:
       tags:
       - PointOfSales
@@ -1032,7 +1032,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/pointofsales/{posId}/checkin:
+  /v10/pointofsales/{posId}/checkin:
     get:
       tags:
       - PointOfSales
@@ -1120,7 +1120,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/refunds/{refundId}:
+  /v10/refunds/{refundId}:
     get:
       tags:
       - Refunds
@@ -1209,7 +1209,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/refunds:
+  /v10/refunds:
     get:
       tags:
       - Refunds
@@ -1381,7 +1381,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/refunds/{refundId}/capture:
+  /v10/refunds/{refundId}/capture:
     post:
       tags:
       - Refunds
@@ -1469,7 +1469,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/refunds/{refundId}/cancel:
+  /v10/refunds/{refundId}/cancel:
     post:
       tags:
       - Refunds
@@ -1557,7 +1557,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/stores/{storeId}:
+  /v10/stores/{storeId}:
     get:
       tags:
       - Stores
@@ -1637,7 +1637,7 @@ paths:
               message: Error message explaining the error that happened while processing
                 the request
               correlationId: 549c36b2-1f4c-4007-be7b-5248a44a5a4f
-  /api/v10/stores:
+  /v10/stores:
     get:
       tags:
       - Stores
@@ -1757,6 +1757,7 @@ definitions:
     - CancelledByMobilePay
     - ExpiredAndCancelled
     - Captured
+    - RejectedByMobilePayDueToAgeRestrictions
     type: string
   QueryPaymentResponse:
     required:
@@ -2112,7 +2113,7 @@ definitions:
           type: string
 x-ibm-configuration:
   enforced: true
-  testable: false
+  testable: true
   phase: realized
 basePath: /pos
 securityDefinitions:

@@ -3,7 +3,7 @@
 var utils = require('../utils/writer.js');
 var Stores = require('../service/StoresService');
 
-module.exports.apiV10StoresStoreIdGET = function getStore (req, res, next) {
+module.exports.v10StoresStoreIdGET = function getStore (req, res, next) {
   var storeId = req.swagger.params['storeId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -19,7 +19,7 @@ module.exports.apiV10StoresStoreIdGET = function getStore (req, res, next) {
     });
 };
 
-module.exports.apiV10StoresGET = function getStores (req, res, next) {
+module.exports.v10StoresGET = function getStores (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
