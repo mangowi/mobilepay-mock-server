@@ -56,7 +56,7 @@ module.exports.v10PaymentsPOST = function initiateReservationPayment (req, res, 
     });
 };
 
-module.exports.apiV10PaymentsPaymentIdReadyPOST = function paymentReady (req, res, next) {
+module.exports.v10PaymentsPaymentIdReadyPOST = function paymentReady (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -73,7 +73,7 @@ module.exports.apiV10PaymentsPaymentIdReadyPOST = function paymentReady (req, re
     });
 };
 
-module.exports.apiV10PaymentsPreparePOST = function prepareReservationPayment (req, res, next) {
+module.exports.v10PaymentsPreparePOST = function prepareReservationPayment (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
@@ -90,7 +90,7 @@ module.exports.apiV10PaymentsPreparePOST = function prepareReservationPayment (r
     });
 };
 
-module.exports.apiV10PaymentsPaymentIdGET = function queryPayment (req, res, next) {
+module.exports.v10PaymentsPaymentIdGET = function queryPayment (req, res, next) {
   var paymentId = req.swagger.params['paymentId'].value;
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
@@ -107,7 +107,7 @@ module.exports.apiV10PaymentsPaymentIdGET = function queryPayment (req, res, nex
     });
 };
 
-module.exports.apiV10PaymentsGET = function queryPaymentIds (req, res, next) {
+module.exports.v10PaymentsGET = function queryPaymentIds (req, res, next) {
   var authorization = req.swagger.params['Authorization'].value;
   var xMobilePayMerchantVATNumber = req.swagger.params['X-MobilePay-Merchant-VAT-Number'].value;
   var xIBMClientId = req.swagger.params['X-IBM-Client-Id'].value;
