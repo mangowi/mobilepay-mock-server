@@ -57,6 +57,9 @@ exports.createPos = function(authorization,xMobilePayMerchantVATNumber,xIBMClien
  * no response value expected for this operation
  **/
 exports.deletePos = function(posId,authorization,xMobilePayClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
+  if (pointOfSales.has(posId)) {
+      pointOfSales.delete(posId);
+  }
   return new Promise(function(resolve, reject) {
     resolve();
   });
@@ -107,7 +110,7 @@ exports.getPos = function(posId,authorization,xMobilePayMerchantVATNumber,xIBMCl
       var pos = pointOfSales.get(posId);
       return getPosInternal(pos);
   } else {
-    return prepareErrorResponse("404", "code", "message", "correlationId");
+    return prepareErrorResponse(404, "code", "message", "correlationId");
   }
 };
 
