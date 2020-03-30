@@ -1,6 +1,15 @@
 'use strict';
 
 
+const uuid = require('uuid/v4');
+const utils = require('../utils/writer.js');
+
+let pointOfSales = new Map();
+
+exports.getPointsOfSales = function() {
+  return pointOfSales;
+};
+
 /**
  * Create a point of sale
  *
@@ -14,16 +23,24 @@
  * returns CreatePosResponse
  **/
 exports.createPos = function(authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion,xMobilePayIdempotencyKey,body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "posId" : "4cc3e55a-1dfc-4d0b-8d29-588bee056104"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  var posId = uuid();
+  pointOfSales.set(
+    posId,
+    {
+      posId : posId,
+      merchantPosId : body.merchantPosId,
+      storeId : body.storeId,
+      name : body.name,
+      beaconId : body.beaconId,
+      callbackAlias : body.callbackAlias,
+      supportedBeaconTypes : body.supportedBeaconTypes
     }
+  );
+  return new Promise(function(resolve, reject) {
+    var payload = {
+      "posId": posId
+    };
+    resolve(payload);
   });
 };
 
@@ -86,22 +103,17 @@ exports.getCheckIn = function(posId,authorization,xMobilePayMerchantVATNumber,xI
  * returns PosResponse
  **/
 exports.getPos = function(posId,authorization,xMobilePayMerchantVATNumber,xIBMClientId,xMobilePayClientSystemName,xMobilePayClientSystemVersion) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "posId" : "8c12243c-edee-4ac0-9179-b7e63ccae2dc",
-  "merchantPosId" : "My-Pos-1",
-  "storeId" : "268edad7-ba00-442e-b5c2-0c9b58e80771",
-  "name" : "Register 1",
-  "beaconId" : "123456789123456",
-  "callbackAlias" : "Example Alias",
-  "supportedBeaconTypes" : [ "QR", "BluetoothMP2" ]
+  if (pointOfSales.has(posId)) {
+      var pos = pointOfSales.get(posId);
+      return getPosInternal(pos);
+  } else {
+    return prepareErrorResponse("404", "code", "message", "correlationId");
+  }
 };
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
+
+let getPosInternal = function(pos) {
+  return new Promise(function(resolve, reject) {
+    resolve(pos);
   });
 };
 
@@ -130,5 +142,16 @@ exports.getPosWithFilter = function(authorization,xMobilePayMerchantVATNumber,xI
     } else {
       resolve();
     }
+  });
+};
+
+let prepareErrorResponse = function(httpCode, code, message, correlationId) {
+  return new Promise(function (resolve) {
+    var payload = {
+      'code': code,
+      'message': message,
+      'correlationId': correlationId
+    };
+    resolve(utils.respondWithCode(httpCode, payload));
   });
 };
