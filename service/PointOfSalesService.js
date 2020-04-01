@@ -31,7 +31,7 @@ exports.createPos = function(authorization,xMobilePayMerchantVATNumber,xIBMClien
       merchantPosId : body.merchantPosId,
       storeId : body.storeId,
       name : body.name,
-      beaconId : body.beaconId,
+      beaconId : body.beaconId == null ? uuid() : body.beaconId,
       callbackAlias : body.callbackAlias,
       supportedBeaconTypes : body.supportedBeaconTypes
     }
