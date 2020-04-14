@@ -1,0 +1,120 @@
+---
+swagger: "2.0"
+info:
+  description: ""
+  version: "2.1.5"
+  title: "IntegratorAuthentication"
+  contact:
+    name: "MobilePay Business Integration"
+    url: ""
+    email: "developer@mobilepay.dk"
+  x-ibm-name: "integratorauthentication"
+basePath: "/integrator-authentication"
+schemes:
+- "https"
+consumes:
+- "application/json"
+- "application/x-www-form-urlencoded"
+produces:
+- "application/json"
+security:
+- ClientId: []
+paths:
+  /.well-known/openid-configuration/jwks:
+    get:
+      tags:
+      - "Token"
+      description: "A JSON Web Key (JWK) is a standard method for representing a cryptographic\
+        \ key using JSON. The spec can be found here: https://tools.ietf.org/html/rfc7517.\
+        \  The Integrator Authentication service signs all JWT access token with a\
+        \ private key. The public key can be obtained in the jwks endpoint to verify\
+        \ the authenticity of the access token."
+      operationId: "_well_knownOpenid_configurationJwksGET"
+      parameters: []
+      responses:
+        "200":
+          description: "200 OK"
+        "401":
+          description: "401 Unauthorized. Will be triggered if you have not supplied\
+            \ a valid X-IBM-Client-Id in the request headers."
+      x-swagger-router-controller: "Token"
+  /connect/token:
+    post:
+      tags:
+      - "Token"
+      summary: ""
+      description: "Used when requesting an access token for onboarded integrator\
+        \ clients."
+      operationId: "connectTokenPOST"
+      parameters:
+      - name: "Authorization"
+        in: "header"
+        description: "Basic authorization scheme. A combination of your ClientId and\
+          \ Client Secret combined with a semicolon and encoded using base64urlencoding.\
+          \ ({Client_Id:Client_Secret}).toBase64UrlEncoding();"
+        required: true
+        type: "string"
+      - name: "Content-Type"
+        in: "header"
+        description: "The request will have to be encoded using the x-www-urlencoded\
+          \ content type."
+        required: true
+        type: "string"
+      - name: "grant_type"
+        in: "formData"
+        description: "Should be set to client_credentials. A grant_type of client_credentials\
+          \ is used in authentication context where's there's no direct end-user envolved,\
+          \ ex. server-to-server communication. Currently, client_credentials is the\
+          \ only grant_type supported by Integrator Authentication. Ex: client_credentials=grant_type"
+        required: true
+        type: "string"
+      - name: "merchant_vat"
+        in: "formData"
+        description: "VAT Number of the Merchant the integrator is integrating on\
+          \ behalf. It will be applied to the JWT access token, if supplied. We support\
+          \ FI and DK vat numbers. The vat number consists of country prefix (either\
+          \ FI or DK) and 8 digits. Ex: merchant_vat=DK12345678"
+        required: false
+        type: "string"
+      responses:
+        "200":
+          description: "200 OK"
+        "401":
+          description: "401 Unauthorized. Can be thrown by the Integrator Authentication\
+            \ service if the Client_Id or Client_Secret supplied in the Authorization\
+            \ header isn't valid.. Can also be thrown if the X-IBM-Client-Id and the\
+            \ Client_Id doesn't match."
+      x-swagger-router-controller: "Token"
+  /.well-known/openid-configuration:
+    get:
+      tags:
+      - "Token"
+      description: "The discovery endpoint, also known as the \"well-known endpoint\"\
+        \ is a set of OpenID Connect properties, used by clients integrating against\
+        \ a OpenID authentication provider. The documents describes which claims,\
+        \ scopes, grant types and endpoints are to be used upon authentication."
+      operationId: "_well_knownOpenid_configurationGET"
+      parameters: []
+      responses:
+        "200":
+          description: "200 OK"
+        "401":
+          description: "401 Unauthorized. Will be triggered if you have not supplied\
+            \ a valid X-IBM-Client-Id in the request headers."
+      x-swagger-router-controller: "Token"
+securityDefinitions:
+  ClientId:
+    description: ""
+    type: "apiKey"
+    name: "X-IBM-Client-Id"
+    in: "header"
+definitions: {}
+x-ibm-configuration:
+  enforced: true
+  testable: true
+  phase: "realized"
+x-ibm-endpoints:
+- endpointUrl: "https://api.sandbox.mobilepay.dk"
+  type:
+  - "production"
+  - "development"
